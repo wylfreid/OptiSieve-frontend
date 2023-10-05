@@ -13,7 +13,7 @@ import {
 import Constants from "expo-constants";
 import { Camera } from "expo-camera";
 import COLORS from "../../const/colors";
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icon2 from "react-native-vector-icons/Octicons";
@@ -22,47 +22,12 @@ import CameraPreview from "../components/CameraPreview";
 import ImgContext from "../../hooks/ImgContext";
 import HomeCarousel from "../components/HomeCarousel";
 import Empty from "../../../assets/images/empty";
-import Settings from "../../../assets/images/shapes/Settings";
-import RBSheet from 'react-native-raw-bottom-sheet';
-import Input from "../components/Input";
 
-import CameraIcon from "../../../assets/images/shapes/Camera";
-import GalerieIcon from "../../../assets/images/shapes/Galerie";
-import Toast from "react-native-toast-message";
 
 
 
 let camera;
 export default function HomeScreen({ navigation }) {
-
-  const [inputs, setInputs] = useState({
-    sample_name: "",
-    depth: "",
-    source: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  const bottomSheetRef = useRef();
-  const bottomSheetRef2 = useRef(null);
-
-  const openBottomSheet = () => {
-    bottomSheetRef.current.open();
-  };
-
-  const closeBottomSheet = () => {
-    bottomSheetRef.current.close();
-  };
-
-  const openBottomSheet2 = () => {
-    closeBottomSheet()
-    bottomSheetRef2.current.open();
-  };
-
-  const closeBottomSheet2 = () => {
-    bottomSheetRef2.current.close();
-  };
-
   const [imgProfile,setImgProfile] = useState(null);
 
 const __loadUserProfile = async ()=>{
@@ -75,20 +40,6 @@ const __loadUserProfile = async ()=>{
   }catch{
   }
  
-};
-
-const handleOnChange = (text, input) => {
-  setInputs((prevState) => ({
-    ...prevState,
-    [input]: text,
-  }));
-};
-
-const handleError = (error, input) => {
-  setErrors((prevState) => ({
-    ...prevState,
-    [input]: error,
-  }));
 };
 
   useEffect(() => {__loadUserProfile()},[]);
@@ -137,13 +88,7 @@ const handleError = (error, input) => {
     if (status === "granted") {
       setStartCamera(true);
     } else {
-      closeBottomSheet2()
-      Toast.show({
-        type: "error",
-        text1: "Alerte",
-        text2: "vous devez autoriser l'accès à l'appareil photo",
-        position:"top"
-      });
+      Alert.alert("Access denied");
     }
   };
   const __takePicture = async () => {
@@ -231,8 +176,6 @@ const handleError = (error, input) => {
 
       if (temponPicture.length < 2) {
         pickImage();
-      }else{
-        closeBottomSheet2()
       }
     }
   };
@@ -431,26 +374,33 @@ const handleError = (error, input) => {
             />
           )}
 
+{image.length != 2 && <View style={{elevation: 1.5,width: '100%', height: 60, alignItems:"center",justifyContent:"center",  backgroundColor: COLORS.white, justifyContent: "center", zIndex: 10, borderBottomWidth: 1, borderColor: COLORS.light}}>
+        
+                  <Text style={{fontSize:20, fontFamily: 'poppins-semiBold', paddingTop: 10}}> Grading HST </Text>
+
+                  <TouchableOpacity style={{position: "absolute",right:0}}  >
+                  <Icon
+                  name="person-circle-outline"
+                  style={{ fontSize: 35, color: COLORS.purple, right: 10}}
+                  />
+                  </TouchableOpacity>
+                </View>}
 
   <View style={styles.topContainer}>
            
             {/* <HomeCarousel/> */}
 
             <View style={{alignItems:"center",justifyContent:"center", flexDirection: "column", gap: 10}}>
-              <TouchableOpacity style={styles.profilePic} onPress={pickImageProfile}>
-                {/* <Text style={{fontSize: 26, color: "#fff"}}>
+              <TouchableOpacity style={styles.profilePic}>
+                <Text style={{fontSize: 26, color: "#fff"}}>
                   AS
-                </Text> */}
-                  <Image
-                    source={imgProfile? {uri:imgProfile} : require("../../../assets/images/profile.png")}
-                    style={styles.imageProfileSize}
-                  />
+                </Text>
               </TouchableOpacity>
 
               <View style={{alignItems:"center",justifyContent:"center"}}>
 
                 <Text>
-                  {userData?.name}
+                  Afrographix Studio
                 </Text>
 
                 <Text style={{fontSize: 12, color: "#A7A7A7"}}>
@@ -461,155 +411,46 @@ const handleError = (error, input) => {
             </View>
 
           </View>
-          <View style={styles.middleContainer}> 
-            <Empty/>
-
-            <Text style={{fontSize: 14, lineHeight: 16}}>
-              Aucune analyse pour l’instant
-            </Text>
-          </View>
-
           <View style={styles.bottomContainer}> 
-
-            <View style={{flex: 1,justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
-                <TouchableOpacity onPress={() =>{}} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#E6E6E6", borderRadius: 8}}>
-                  <Settings/>
-                </TouchableOpacity>
-
-                <View style={{width: 266 }}>
-                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={openBottomSheet} activeOpacity={0.7}>
-                    <Text style={styles.text}>Nouvelle analyse</Text>
-                  </TouchableOpacity>
-                
-                </View>
-
-              
+          <Text style={{fontWeight:"600", fontSize:20, fontFamily: 'poppins-regular', marginTop: -20}}> Welcome, {userData?.name} </Text>
+            <Text style={{fontFamily: 'poppins-regular',color: COLORS.black, fontSize: 13, fontWeight: 500, textAlign: "center"}}>
+              Choose the image import method
+            </Text>
+            <TouchableOpacity style={styles.camera} onPress={__startCamera}>
+              <View style={styles.cameraText}>
+                <Text style={styles.textName}>CAMERA</Text>
+                <Text
+                  style={{
+                    color: COLORS.light , fontFamily: "poppins-regular",
+                  }}
+                >
+                  Take pictures
+                </Text>
               </View>
+              <Image
+                source={require("../../../assets/images/camera.png")}
+                style={styles.imageCameraSize}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.galerie} onPress={pickImage}>
+              <View style={styles.cameraText}>
+                <Text style={[styles.textName, { color: COLORS.purple }]}>
+                  IMPORT
+                </Text>
+                <Text
+                  style={{
+                    color: COLORS.black , fontFamily: "poppins-regular",
+                  }}
+                >
+                  Load pictures
+                </Text>
+              </View>
+              <Image
+                source={require("../../../assets/images/Import.png")}
+                style={{ height: 80, width: 80 }}
+              />
+            </TouchableOpacity>
           </View>
-
-          <RBSheet
-            ref={bottomSheetRef}
-            height={421}
-            openDuration={250}
-            closeOnDragDown={true}
-            customStyles={{
-              container: {
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20
-              }
-            }}
-          >
-            <Text style={{fontSize: 22, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
-            > Nouvelle Analyse
-           </Text>
-
-           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
-            > Veuillez renseigner les informations ci - dessous
-           </Text>
-
-
-           <View style={{marginHorizontal: 30, marginTop: 20  }}>
-            <Input
-              label="Nom de l’echantillon"
-              iconName="finger-print-outline"
-              error={errors.sample_name}
-              onFocus={() => {
-                handleError(null,"sample_name");
-              }}
-              placeholder="Ecrivez ici..."
-              onChangeText={(text)=>handleOnChange(text,"sample_name")}
-            />
-
-            <Input
-              label="Profondeur"
-              iconName="resize-outline"
-              error={errors.depth}
-              onFocus={() => {
-                handleError(null,"depth");
-              }}
-              placeholder="Ecrivez ici..."
-              onChangeText={(text)=>handleOnChange(text,"depth")}
-            />
-
-            <Input
-              label="Provenance"
-              iconName="location-outline"
-              error={errors.source}
-              onFocus={() => {
-                handleError(null,"source");
-              }}
-              placeholder="Ecrivez ici..."
-              onChangeText={(text)=>handleOnChange(text,"source")}
-            />
-            </View>
-
-            <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>closeBottomSheet()} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
-                <Icon
-                  name="chevron-back-outline"
-                  style={{ fontSize: 36, color: "#fff"}}
-                />
-              </TouchableOpacity>
-
-              <View style={{width: 266 }}>
-                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={openBottomSheet2} activeOpacity={0.7}>
-                  <Text style={styles.text}>Importer les images</Text>
-                </TouchableOpacity>
-              
-              </View>
-
-            
-            </View>
-
-          </RBSheet>
-
-
-          <RBSheet
-            ref={bottomSheetRef2}
-            height={203}
-            openDuration={250}
-            closeOnDragDown={true}
-            customStyles={{
-              container: {
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20
-              }
-            }}
-          >
-            <Text style={{fontSize: 22, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
-            > Importer les images
-           </Text>
-
-           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
-            > Par quel moyen souhaitez vous importer vos 2 images
-           </Text>
-
-           <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
-              <TouchableOpacity onPress={() =>[closeBottomSheet2(), openBottomSheet()]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
-                <Icon
-                  name="chevron-back-outline"
-                  style={{ fontSize: 36, color: "#fff"}}
-                />
-              </TouchableOpacity>
-
-              <View style={{flex: 1,justifyContent: "space-around", alignItems: "center", flexDirection:"row", gap: 15 }}>
-                <TouchableOpacity style={styles.import_button} onPress={__startCamera}>
-                  <CameraIcon />
-                  <Text style={{}}>Camera</Text>
-                </TouchableOpacity>
-              
-                <TouchableOpacity style={styles.import_button} onPress={pickImage}>
-                  <GalerieIcon />
-                  <Text style={{}}>Galerie</Text>
-                </TouchableOpacity>
-              </View>
-
-            
-            </View>
-    
-
-          </RBSheet>
-
         </>
       )}
     </SafeAreaView>
@@ -629,30 +470,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0072F7"
 
   },
-  import_button:{
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    height: 53,
-    backgroundColor: "#F2F2F2",
-    flex: 0.5,
-    flexDirection: "row",
-    borderRadius: 8
-  },
 
-  button: {
-    height:55,
-    width:"100%",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius:8,
-  },
-  
-  text:{
-    fontSize:16,
-    fontFamily: 'PTSans-regular', 
-    color:COLORS.white
-  },
 
 
 
@@ -668,31 +486,30 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   topContainer: {
-    flex: 0.30,
+    flex: 0.25,
     alignItems: "center",
     justifyContent: "center",
     /* backgroundColor: COLORS.purple, */
   },
-  middleContainer: {
-    flex: 0.70,
+  bottomContainer: {
+    flex: 0.65,
     backgroundColor: "#D9D9D95E",
     justifyContent: "center",
     alignItems: "center",
     paddingBottom: 20,
-    gap: 20,
+    gap: 40,
   },
-  bottomContainer: {
-    /* flex: 0.2, */
-    height: 90,
+  infoProfileTop: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    width: "100%",
+    flex: 0.7,
+    paddingTop: "40%",
   },
-
   imageProfileSize: {
-    height: 80,
-    width: 80,
-    borderRadius: 80,
+    height: 120,
+    width: 120,
+    borderRadius: 150,
     backgroundColor: COLORS.light,
   },
   textName: {
