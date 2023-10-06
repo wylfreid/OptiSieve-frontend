@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  StatusBar
 } from "react-native";
 import Constants from "expo-constants";
 import { Camera } from "expo-camera";
@@ -29,11 +30,20 @@ import Input from "../components/Input";
 import CameraIcon from "../../../assets/images/shapes/Camera";
 import GalerieIcon from "../../../assets/images/shapes/Galerie";
 import Toast from "react-native-toast-message";
+import Profil from "../../../assets/images/shapes/Profil";
+import Logout from "../../../assets/images/shapes/Logout";
+import Password from "../../../assets/images/shapes/Password";
+import Email from "../../../assets/images/shapes/Email";
+
+
 
 
 
 let camera;
 export default function HomeScreen({ navigation }) {
+
+  StatusBar.setBarStyle('dark-content');
+  StatusBar.setBackgroundColor('#fff');
 
   const [inputs, setInputs] = useState({
     sample_name: "",
@@ -43,25 +53,65 @@ export default function HomeScreen({ navigation }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const bottomSheetRef = useRef();
-  const bottomSheetRef2 = useRef(null);
+  const newAnalysis = useRef(null);
+  const importModal = useRef(null);
+  const settingsModal = useRef(null);
+  const profileEditModal = useRef(null);
 
-  const openBottomSheet = () => {
-    bottomSheetRef.current.open();
+  const openBottomSheet = (ref) => {
+    if (ref == newAnalysis) {
+      
+      newAnalysis.current.open();
+      
+    }else if(ref == importModal){
+
+      newAnalysis.current.close();
+      importModal.current.open();
+
+    }else if(ref == settingsModal){
+
+      settingsModal.current.open();
+
+    }else if(ref == profileEditModal){
+
+      settingsModal.current.close();
+      profileEditModal.current.open();
+
+    }
   };
 
-  const closeBottomSheet = () => {
-    bottomSheetRef.current.close();
+
+  const closeBottomSheet = (ref) => {
+    if (ref == newAnalysis) {
+      
+      newAnalysis.current.close();
+      
+    }else if(ref == importModal){
+      
+      importModal.current.close();
+
+    }else if(ref == settingsModal){
+
+      settingsModal.current.close();
+
+    }else if(ref == profileEditModal){
+
+      profileEditModal.current.close();
+
+    }
   };
 
-  const openBottomSheet2 = () => {
-    closeBottomSheet()
-    bottomSheetRef2.current.open();
-  };
 
-  const closeBottomSheet2 = () => {
-    bottomSheetRef2.current.close();
-  };
+
+  const handleLogout = () =>{
+    if (userData) {
+      user = { ...userData, loggedIn: false };
+      AsyncStorage.setItem("userData", JSON.stringify(user));
+      navigation.navigate("LoginScreen");
+    }
+  }
+
+
 
   const [imgProfile,setImgProfile] = useState(null);
 
@@ -76,6 +126,15 @@ const __loadUserProfile = async ()=>{
   }
  
 };
+
+const __DateFormatter = (dateString) =>{
+  const [month, day, year] = dateString.split('/');
+  const date = new Date(year, month - 1, day);
+  const options = { year: 'numeric', month: 'long' };
+  const formattedDate = `Depuis ${date.toLocaleDateString('fr-FR', options)}`;
+  
+  return formattedDate
+}
 
 const handleOnChange = (text, input) => {
   setInputs((prevState) => ({
@@ -137,7 +196,7 @@ const handleError = (error, input) => {
     if (status === "granted") {
       setStartCamera(true);
     } else {
-      closeBottomSheet2()
+      closeBottomSheet(importModal)
       Toast.show({
         type: "error",
         text1: "Alerte",
@@ -213,6 +272,8 @@ const handleError = (error, input) => {
    
   }
 
+
+
   const pickImage = async () => {
 
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -232,7 +293,7 @@ const handleError = (error, input) => {
       if (temponPicture.length < 2) {
         pickImage();
       }else{
-        closeBottomSheet2()
+        closeBottomSheet(importModal)
       }
     }
   };
@@ -256,6 +317,7 @@ const handleError = (error, input) => {
   useEffect(() => {
     userInfo();
   }, []);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -438,23 +500,30 @@ const handleError = (error, input) => {
 
             <View style={{alignItems:"center",justifyContent:"center", flexDirection: "column", gap: 10}}>
               <TouchableOpacity style={styles.profilePic} onPress={pickImageProfile}>
-                {/* <Text style={{fontSize: 26, color: "#fff"}}>
-                  AS
-                </Text> */}
+                {
+                  !imgProfile?
+                
+                
+                <Text style={{fontSize: 28, color: "#fff", fontFamily: 'PTSans-regular',}}>
+                  {userData && userData?.name?.charAt(0)}
+                </Text>
+                
+                :
                   <Image
-                    source={imgProfile? {uri:imgProfile} : require("../../../assets/images/profile.png")}
+                    source={ {uri:imgProfile}}
                     style={styles.imageProfileSize}
                   />
+                }
               </TouchableOpacity>
 
               <View style={{alignItems:"center",justifyContent:"center"}}>
 
-                <Text>
+                <Text style={{fontFamily: 'PTSans-regular', fontSize: 16 }}>
                   {userData?.name}
                 </Text>
 
-                <Text style={{fontSize: 12, color: "#A7A7A7"}}>
-                  Depuis janvier 2023
+                <Text style={{fontSize: 12, color: "#A7A7A7", fontFamily: 'PTSans-regular', fontSize: 12 }}>
+                  {userData?.date && __DateFormatter(userData?.date)}
                   </Text>
               </View>
 
@@ -464,7 +533,7 @@ const handleError = (error, input) => {
           <View style={styles.middleContainer}> 
             <Empty/>
 
-            <Text style={{fontSize: 14, lineHeight: 16}}>
+            <Text style={{fontSize: 14, lineHeight: 16,fontFamily: 'PTSans-regular', }}>
               Aucune analyse pour l’instant
             </Text>
           </View>
@@ -472,12 +541,12 @@ const handleError = (error, input) => {
           <View style={styles.bottomContainer}> 
 
             <View style={{flex: 1,justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
-                <TouchableOpacity onPress={() =>{}} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#E6E6E6", borderRadius: 8}}>
+                <TouchableOpacity onPress={() =>openBottomSheet(settingsModal)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#E6E6E6", borderRadius: 8}}>
                   <Settings/>
                 </TouchableOpacity>
 
                 <View style={{width: 266 }}>
-                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={openBottomSheet} activeOpacity={0.7}>
+                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => openBottomSheet(newAnalysis)} activeOpacity={0.7}>
                     <Text style={styles.text}>Nouvelle analyse</Text>
                   </TouchableOpacity>
                 
@@ -488,7 +557,7 @@ const handleError = (error, input) => {
           </View>
 
           <RBSheet
-            ref={bottomSheetRef}
+            ref={newAnalysis}
             height={421}
             openDuration={250}
             closeOnDragDown={true}
@@ -544,7 +613,7 @@ const handleError = (error, input) => {
             </View>
 
             <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>closeBottomSheet()} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+              <TouchableOpacity onPress={() =>closeBottomSheet(newAnalysis)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
                   style={{ fontSize: 36, color: "#fff"}}
@@ -552,7 +621,7 @@ const handleError = (error, input) => {
               </TouchableOpacity>
 
               <View style={{width: 266 }}>
-                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={openBottomSheet2} activeOpacity={0.7}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => openBottomSheet(importModal)} activeOpacity={0.7}>
                   <Text style={styles.text}>Importer les images</Text>
                 </TouchableOpacity>
               
@@ -565,7 +634,7 @@ const handleError = (error, input) => {
 
 
           <RBSheet
-            ref={bottomSheetRef2}
+            ref={importModal}
             height={203}
             openDuration={250}
             closeOnDragDown={true}
@@ -585,7 +654,7 @@ const handleError = (error, input) => {
            </Text>
 
            <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
-              <TouchableOpacity onPress={() =>[closeBottomSheet2(), openBottomSheet()]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+              <TouchableOpacity onPress={() =>[closeBottomSheet(importModal), openBottomSheet(newAnalysis)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
                   style={{ fontSize: 36, color: "#fff"}}
@@ -610,6 +679,84 @@ const handleError = (error, input) => {
 
           </RBSheet>
 
+
+          <RBSheet
+            ref={settingsModal}
+            height={305}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 15,fontSize: 18, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Options
+           </Text>
+
+     
+              <View style={{marginHorizontal: 30,flex: 1,justifyContent: "center", alignItems: "center", gap: 10 }}>
+                <TouchableOpacity style={styles.option_button} onPress={()=>openBottomSheet(profileEditModal)}>
+                  <Profil />
+                  <Text style={{}}>Editer votre profil</Text>
+                </TouchableOpacity>
+              
+                <TouchableOpacity style={styles.option_button} onPress={()=>handleLogout()}>
+                  <Logout />
+                  <Text style={{}}>Vous deconnecter</Text>
+                </TouchableOpacity>
+              
+
+                <TouchableOpacity onPress={() => closeBottomSheet(settingsModal)} style={{marginTop: 10,width:"100%", justifyContent: "center", alignItems: "center",  height:54,backgroundColor: COLORS.black, borderRadius: 8}}>
+                  <Text style={{color: "#fff"}}>Retour</Text>
+                </TouchableOpacity>
+             
+              </View>
+
+          </RBSheet>
+
+          <RBSheet
+            ref={profileEditModal}
+            height={373}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 15,fontSize: 18, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Edition du profil
+           </Text>
+
+     
+              <View style={{marginHorizontal: 30,flex: 1,justifyContent: "center", alignItems: "center", gap: 10 }}>
+                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                  <Profil />
+                  <Text style={{}}>Editer le nom d’utilisateur</Text>
+                </TouchableOpacity>
+              
+                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                  <Password />
+                  <Text style={{}}>Editer le mot de passe</Text>
+                </TouchableOpacity>
+              
+                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                  <Email />
+                  <Text style={{}}>Editer l’addresse email</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => [closeBottomSheet(profileEditModal), openBottomSheet(settingsModal)]} style={{marginTop: 10,width:"100%", justifyContent: "center", alignItems: "center",  height:54,backgroundColor: COLORS.black, borderRadius: 8}}>
+                  <Text style={{color: "#fff"}}>Retour</Text>
+                </TouchableOpacity>
+             
+              </View>
+
+          </RBSheet>
         </>
       )}
     </SafeAreaView>
@@ -637,7 +784,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
     flex: 0.5,
     flexDirection: "row",
-    borderRadius: 8
+    borderRadius: 8,
+    
+  },
+
+  option_button:{
+    height: 59,
+    width:"100%",
+    backgroundColor: "#F2F2F2",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    flexDirection: "row",
+    gap: 15,
+    paddingLeft: 20
   },
 
   button: {
@@ -668,13 +828,13 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   topContainer: {
-    flex: 0.30,
+    flex: 0.25,
     alignItems: "center",
     justifyContent: "center",
     /* backgroundColor: COLORS.purple, */
   },
   middleContainer: {
-    flex: 0.70,
+    flex: 0.75,
     backgroundColor: "#D9D9D95E",
     justifyContent: "center",
     alignItems: "center",

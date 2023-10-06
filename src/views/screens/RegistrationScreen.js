@@ -73,7 +73,8 @@ export default function RegistrationScreen({ navigation }) {
     setTimeout(() => {
       try {
         const inputsData = {
-          ...inputs
+          ...inputs,
+          date: new Date().toLocaleDateString()
         }
 
         delete inputsData.password_confirm;
