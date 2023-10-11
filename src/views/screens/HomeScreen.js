@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  Keyboard,
+  ScrollView,
 } from "react-native";
 import Constants from "expo-constants";
 import { Camera } from "expo-camera";
@@ -26,6 +28,7 @@ import Empty from "../../../assets/images/empty";
 import Settings from "../../../assets/images/shapes/Settings";
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Input from "../components/Input";
+import Loader from "../components/Loader";
 
 import CameraIcon from "../../../assets/images/shapes/Camera";
 import GalerieIcon from "../../../assets/images/shapes/Galerie";
@@ -34,6 +37,8 @@ import Profil from "../../../assets/images/shapes/Profil";
 import Logout from "../../../assets/images/shapes/Logout";
 import Password from "../../../assets/images/shapes/Password";
 import Email from "../../../assets/images/shapes/Email";
+
+
 
 
 
@@ -49,6 +54,12 @@ export default function HomeScreen({ navigation }) {
     sample_name: "",
     depth: "",
     source: "",
+
+    userName: "",
+    email: "",
+    oldPassword: "",
+    newPassword: "",
+    newPasswordConfirm: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -57,6 +68,9 @@ export default function HomeScreen({ navigation }) {
   const importModal = useRef(null);
   const settingsModal = useRef(null);
   const profileEditModal = useRef(null);
+  const nameEditModal = useRef(null);
+  const passwordEditModal = useRef(null);
+  const emailEditModal = useRef(null);
 
   const openBottomSheet = (ref) => {
     if (ref == newAnalysis) {
@@ -77,9 +91,28 @@ export default function HomeScreen({ navigation }) {
       settingsModal.current.close();
       profileEditModal.current.open();
 
+    }else if(ref == nameEditModal){
+
+      profileEditModal.current.close();
+      nameEditModal.current.open();
+
+    }else if(ref == passwordEditModal){
+
+      profileEditModal.current.close();
+      passwordEditModal.current.open();
+
+    }
+
+    else if(ref == emailEditModal){
+
+      profileEditModal.current.close();
+      emailEditModal.current.open();
+
     }
   };
 
+ 
+  
 
   const closeBottomSheet = (ref) => {
     if (ref == newAnalysis) {
@@ -98,8 +131,114 @@ export default function HomeScreen({ navigation }) {
 
       profileEditModal.current.close();
 
+    }else if(ref == nameEditModal){
+
+      nameEditModal.current.close();
+
+    }else if(ref == passwordEditModal){
+
+      passwordEditModal.current.close();
+
+    }else if(ref == emailEditModal){
+
+      emailEditModal.current.close();
+
     }
   };
+
+  const closeAllBottomSheet = (ref) =>{
+    newAnalysis.current.close();
+    importModal.current.close();
+    settingsModal.current.close();
+    profileEditModal.current.close();
+    nameEditModal.current.close();
+    passwordEditModal.current.close();
+    emailEditModal.current.close();
+  }
+
+  const validate = (field, value) => {
+
+    Keyboard.dismiss();
+
+    if (userData) {
+    
+      let isValid = true;
+
+      
+
+      if (Array.isArray(field) && Array.isArray(value)) {
+       
+        for (let index = 0; index < field.length; index++) {
+
+          if (field[index] == "oldPassword"  && inputs[field[index]] != userData?.password) {
+            handleError("Le mot de passe actuel ne correspond pas", "oldPassword");
+            isValid = false;
+          }
+
+          if (field[index] == "newPasswordConfirm"  && inputs[field[index]] != inputs.newPassword) {
+            handleError("Le mot de passe est différent", "newPasswordConfirm");
+            isValid = false;
+          }
+
+          if (!inputs[field[index]]) {
+            handleError(`Veuillez remplir ce champ`, field[index]);
+            isValid = false;
+          }
+          
+        }
+
+        field = "password"
+        value = value[value.length - 1]
+        
+      }else{
+        
+        if (field == "email" && !inputs.email.match(/\S+@\S+\.\S+/)) {
+          handleError("Veuillez saisir un email valide", "email");
+          isValid = false;
+        }
+
+        if (inputs[field]?.length == 0) {
+          handleError(`Veuillez remplir ce champ`, field);
+          isValid = false;
+        }
+      }
+
+      if (isValid) {
+        update(field,value);
+      }
+    }
+  };
+
+  const update = (field,value) =>{
+    setLoading(true);
+    closeAllBottomSheet()
+    
+    setTimeout(() => {
+      try {
+      user = { ...userData, [field]: value };
+      AsyncStorage.setItem("userData", JSON.stringify(user));
+
+      console.log(user);
+
+      setLoading(false);
+      Toast.show({
+        type: "success",
+        text1: "Succès",
+        text2: "Les modifications on été enregistrées",
+        position:"top"
+      });
+
+      }catch (error) {
+        setLoading(false);
+        Toast.show({
+          type: "error",
+          text1: "Erreur de connection",
+          text2: "une erreur inattendue s'est produite, veuillez réessayer.",
+          position:"bottom"
+        });
+      }
+    }, 3000);
+  }
 
 
 
@@ -110,6 +249,8 @@ export default function HomeScreen({ navigation }) {
       navigation.navigate("LoginScreen");
     }
   }
+
+  
 
 
 
@@ -321,6 +462,7 @@ const handleError = (error, input) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Loader visible={loading} />
       {startCamera ? (
         <View
           style={{
@@ -505,7 +647,7 @@ const handleError = (error, input) => {
                 
                 
                 <Text style={{fontSize: 28, color: "#fff", fontFamily: 'PTSans-regular',}}>
-                  {userData && userData?.name?.charAt(0)}
+                  {userData && userData?.userName?.charAt(0)}
                 </Text>
                 
                 :
@@ -519,7 +661,7 @@ const handleError = (error, input) => {
               <View style={{alignItems:"center",justifyContent:"center"}}>
 
                 <Text style={{fontFamily: 'PTSans-regular', fontSize: 16 }}>
-                  {userData?.name}
+                  {userData?.userName}
                 </Text>
 
                 <Text style={{fontSize: 12, color: "#A7A7A7", fontFamily: 'PTSans-regular', fontSize: 12 }}>
@@ -735,17 +877,17 @@ const handleError = (error, input) => {
 
      
               <View style={{marginHorizontal: 30,flex: 1,justifyContent: "center", alignItems: "center", gap: 10 }}>
-                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                <TouchableOpacity style={styles.option_button} onPress={()=>openBottomSheet(nameEditModal)}>
                   <Profil />
                   <Text style={{}}>Editer le nom d’utilisateur</Text>
                 </TouchableOpacity>
               
-                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                <TouchableOpacity style={styles.option_button} onPress={()=>openBottomSheet(passwordEditModal)}>
                   <Password />
                   <Text style={{}}>Editer le mot de passe</Text>
                 </TouchableOpacity>
               
-                <TouchableOpacity style={styles.option_button} onPress={()=>{}}>
+                <TouchableOpacity style={styles.option_button} onPress={()=>openBottomSheet(emailEditModal)}>
                   <Email />
                   <Text style={{}}>Editer l’addresse email</Text>
                 </TouchableOpacity>
@@ -755,6 +897,191 @@ const handleError = (error, input) => {
                 </TouchableOpacity>
              
               </View>
+
+          </RBSheet>
+
+          <RBSheet
+            ref={nameEditModal}
+            height={290}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Edition du nom d’utilisateur
+           </Text>
+
+           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
+            > Veuillez renseigner votre nouveau nom
+           </Text>
+
+
+           <View style={{marginHorizontal: 30, marginTop: 20  }}>
+            <Input
+              label="Nom d’utilisateur"
+              iconName="person-outline"
+              error={errors.userName}
+              onFocus={() => {
+                handleError(null,"userName");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"userName")}
+            />
+            </View>
+
+            <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+              <TouchableOpacity onPress={() =>[closeBottomSheet(nameEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                <Icon
+                  name="chevron-back-outline"
+                  style={{ fontSize: 36, color: "#fff"}}
+                />
+              </TouchableOpacity>
+
+              <View style={{width: 266 }}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("userName", inputs?.userName)} activeOpacity={0.7}>
+                  <Text style={styles.text}>Enregistrer</Text>
+                </TouchableOpacity>
+              
+              </View>
+
+            
+            </View>
+
+          </RBSheet>
+
+
+          <RBSheet
+            ref={passwordEditModal}
+            height={455}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Edition du mot de passe
+           </Text>
+
+           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
+            > Veuillez renseigner les champs ci-dessous
+           </Text>
+
+
+           <ScrollView contentContainerStyle={{paddingTop: 35,paddingBottomBottom: 35, marginHorizontal: 30}}>
+            <Input
+              label="Mot de passe actuel"
+              error={errors.oldPassword}
+              password = {true}
+              onFocus={() => {
+                handleError(null,"oldPassword");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"oldPassword")}
+            />
+
+            <Input
+              label="Nouveau mot de passe"
+              error={errors.newPassword}
+              password = {true}
+              onFocus={() => {
+                handleError(null,"newPassword");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"newPassword")}
+            />
+
+            <Input
+              label="Confirmer le nouveau mot de passe"
+              error={errors.newPasswordConfirm}
+              password = {true}
+              onFocus={() => {
+                handleError(null,"newPasswordConfirm");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"newPasswordConfirm")}
+            />
+            <View style={{marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+              <TouchableOpacity onPress={() =>[closeBottomSheet(passwordEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                <Icon
+                  name="chevron-back-outline"
+                  style={{ fontSize: 36, color: "#fff"}}
+                />
+              </TouchableOpacity>
+
+              <View style={{width: 266 }}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate(["oldPassword","newPassword","newPasswordConfirm"], [inputs?.oldPassword,inputs?.newPassword,inputs?.newPasswordConfirm])} activeOpacity={0.7}>
+                  <Text style={styles.text}>Enregistrer</Text>
+                </TouchableOpacity>
+              
+              </View>
+
+            
+            </View>
+            </ScrollView>
+
+
+          </RBSheet>
+
+          <RBSheet
+            ref={emailEditModal}
+            height={290}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Edition de l’adresse mail
+           </Text>
+
+           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
+            > Veuillez renseigner votre nouvel email
+           </Text>
+
+
+           <View style={{marginHorizontal: 30, marginTop: 20  }}>
+            <Input
+              label="Email"
+              iconName="mail-outline"
+              error={errors.email}
+              onFocus={() => {
+                handleError(null,"email");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"email")}
+            />
+            </View>
+
+            <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+              <TouchableOpacity onPress={() =>[closeBottomSheet(emailEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                <Icon
+                  name="chevron-back-outline"
+                  style={{ fontSize: 36, color: "#fff"}}
+                />
+              </TouchableOpacity>
+
+              <View style={{width: 266 }}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("email", inputs?.email)} activeOpacity={0.7}>
+                  <Text style={styles.text}>Enregistrer</Text>
+                </TouchableOpacity>
+              
+              </View>
+
+            
+            </View>
 
           </RBSheet>
         </>

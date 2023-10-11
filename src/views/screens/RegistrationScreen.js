@@ -26,7 +26,7 @@ export default function RegistrationScreen({ navigation }) {
   StatusBar.setBackgroundColor('#fff');
 
   const [inputs, setInputs] = useState({
-    name: "",
+    userName: "",
     email: "",
     password: "",
     password_confirm: "",
@@ -40,8 +40,8 @@ export default function RegistrationScreen({ navigation }) {
     Keyboard.dismiss();
     let isValid = true;
 
-    if (!inputs.name) {
-      handleError("Veuillez saisir votre nom", "name");
+    if (!inputs.userName) {
+      handleError("Veuillez saisir votre nom", "userName");
       isValid = false;
     }
     if (!inputs.email) {
@@ -141,12 +141,12 @@ export default function RegistrationScreen({ navigation }) {
           <Input
             label="Nom d’utilisateur"
             iconName="person-outline"
-            error={errors.name}
+            error={errors.userName}
             onFocus={() => {
-              handleError(null,"name");
+              handleError(null,"userName");
             }}
             placeholder="Ecrivez ici..."
-            onChangeText={(text)=>handleOnChange(text,"name")}
+            onChangeText={(text)=>handleOnChange(text,"userName")}
           />
           <Input
             label="Email"

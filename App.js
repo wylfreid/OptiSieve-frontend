@@ -51,11 +51,14 @@ export default function App() {
     }, 2000);
   }, []);
 
+  
+
   //AsyncStorage.clear()
 
   const authUser = async () => {
     try {
       let userData = await AsyncStorage.getItem("userData");
+      console.log(userData);
       if (userData) {
         userData = JSON.parse(userData);
         if (userData.loggedIn) {

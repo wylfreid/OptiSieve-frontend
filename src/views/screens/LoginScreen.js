@@ -187,10 +187,11 @@ export default function LoginScreen({ navigation }) {
       }
     }, 3000);
   }
+  
 
   const login = async () => {
     let userData = await AsyncStorage.getItem("userData");
-    
+    console.log(userData);
     setLoading(true);
     setTimeout(() => {
       try {
@@ -198,10 +199,10 @@ export default function LoginScreen({ navigation }) {
         if (userData) {
           
           userData = JSON.parse(userData);
-          let userName = userData.name;
+          let userName = userData.userName;
           if (
             userData.email == inputs.email && userData.password == inputs.password || 
-            userData.name == inputs.email && userData.password == inputs.password
+            userData.userName == inputs.email && userData.password == inputs.password
           ) {
             userData = { ...userData, loggedIn: true };
             AsyncStorage.setItem("userData", JSON.stringify(userData));
