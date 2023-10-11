@@ -33,7 +33,7 @@ export default function TensorScreen({ navigation }) {
       console.log("[+] Application started");
       //Wait for tensorflow module to be ready
       const tfReady = await tf.ready();
-      console.log("[+] Loading custom mask detection model");
+      console.log("[+] Loading pre-trained face detection model");
       //Replce model.json and group1-shard.bin with your own custom model
       const modelJson = await require("../../../assets/model/model.json");
       const modelWeights1 = await require("../../../assets/model/group1-shard1of41.bin");
@@ -83,7 +83,6 @@ export default function TensorScreen({ navigation }) {
         ioHandler
       );
 
-      console.log("[+] Loading pre-trained face detection model");
 
       setGradingNetwork(GradingNetwork1);
 
@@ -113,20 +112,20 @@ export default function TensorScreen({ navigation }) {
   const appliedNetwork = async () => {
     try {
       setIsLoaded(false);
-      console.log("[+] Retrieving image 1 from link :" + img[0].uri);
+      console.log("[+] Retrieving image 1 from link :" + img[0]?.uri);
 
       // read the image as base64 and create buffer
-      const img64Top = await FileSystem.readAsStringAsync(img[0].uri, options);
+      const img64Top = await FileSystem.readAsStringAsync(img[0]?.uri, options);
       const imgBufferTop = tf.util.encodeString(img64Top, "base64").buffer;
       const rawImageDataTop = new Uint8Array(imgBufferTop);
 
       let imageTensorTop = imageToTensor(rawImageDataTop).resizeBilinear([299,299]);
 
 
-      console.log("[+] Retrieving image 2 from link :" + img[1].uri);
+      console.log("[+] Retrieving image 2 from link :" + img[1]?.uri);
       
       // read the image as base64 and create buffer
-      const img64Down = await FileSystem.readAsStringAsync(img[1].uri, options);
+      const img64Down = await FileSystem.readAsStringAsync(img[1]?.uri, options);
       const imgBufferDown = tf.util.encodeString(img64Down, "base64").buffer;
       const rawImageDataDown = new Uint8Array(imgBufferDown);
 
