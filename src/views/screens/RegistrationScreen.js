@@ -19,6 +19,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loader from "../components/Loader";
 import Logo from "../../../assets/images/Logo";
 
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+
+import { auth, db } from "./../../firebase.config";
+
+import { setDoc, doc } from "firebase/firestore";
+
+import { storage } from "./../../firebase.config";
 
 export default function RegistrationScreen({ navigation }) {
 
@@ -26,7 +36,7 @@ export default function RegistrationScreen({ navigation }) {
   StatusBar.setBackgroundColor('#fff');
 
   const [inputs, setInputs] = useState({
-    userName: "",
+    displayName: "",
     email: "",
     password: "",
     password_confirm: "",
@@ -40,8 +50,8 @@ export default function RegistrationScreen({ navigation }) {
     Keyboard.dismiss();
     let isValid = true;
 
-    if (!inputs.userName) {
-      handleError("Veuillez saisir votre nom", "userName");
+    if (!inputs.displayName) {
+      handleError("Veuillez saisir votre nom", "displayName");
       isValid = false;
     }
     if (!inputs.email) {
@@ -68,18 +78,31 @@ export default function RegistrationScreen({ navigation }) {
       register();
     }
   };
-  const register = () => {
+  const register = async () => {
     setLoading(true);
-    setTimeout(() => {
       try {
-        const inputsData = {
-          ...inputs,
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          inputs.email,
+          inputs.password
+        );
+  
+        const user = await userCredential.user;
+
+        await updateProfile(user, {
+          displayName: inputs.displayName,
+        });
+  
+        //store user data in firestore database
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          displayName: inputs.displayName,
+          email: inputs.email,
           date: new Date().toLocaleDateString()
-        }
+        });
 
-        delete inputsData.password_confirm;
 
-        AsyncStorage.setItem("userData", JSON.stringify(inputsData));
         navigation.navigate("LoginScreen");
 
         setLoading(false);
@@ -99,8 +122,9 @@ export default function RegistrationScreen({ navigation }) {
           position:"top"
         });
       }
-    }, 3000);
   };
+
+
 
   const handleError = (error, input) => {
     setErrors((prevState) => ({
@@ -141,12 +165,12 @@ export default function RegistrationScreen({ navigation }) {
           <Input
             label="Nom d’utilisateur"
             iconName="person-outline"
-            error={errors.userName}
+            error={errors.displayName}
             onFocus={() => {
-              handleError(null,"userName");
+              handleError(null,"displayName");
             }}
             placeholder="Ecrivez ici..."
-            onChangeText={(text)=>handleOnChange(text,"userName")}
+            onChangeText={(text)=>handleOnChange(text,"displayName")}
           />
           <Input
             label="Email"

@@ -37,15 +37,19 @@ import Profil from "../../../assets/images/shapes/Profil";
 import Logout from "../../../assets/images/shapes/Logout";
 import Password from "../../../assets/images/shapes/Password";
 import Email from "../../../assets/images/shapes/Email";
+import UseAuth from "../../custom-hooks/useAuth";
 
 
 
+import {updateProfile } from "firebase/auth";
+import { storage } from "../../firebase.config";
 
-
-
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 let camera;
 export default function HomeScreen({ navigation }) {
+
+  const { currentUser } = UseAuth();
 
   StatusBar.setBarStyle('dark-content');
   StatusBar.setBackgroundColor('#fff');
@@ -55,7 +59,7 @@ export default function HomeScreen({ navigation }) {
     depth: "",
     source: "",
 
-    userName: "",
+    displayName: "",
     email: "",
     oldPassword: "",
     newPassword: "",
@@ -160,7 +164,7 @@ export default function HomeScreen({ navigation }) {
 
     Keyboard.dismiss();
 
-    if (userData) {
+    if (currentUser) {
     
       let isValid = true;
 
@@ -170,7 +174,7 @@ export default function HomeScreen({ navigation }) {
        
         for (let index = 0; index < field.length; index++) {
 
-          if (field[index] == "oldPassword"  && inputs[field[index]] != userData?.password) {
+          if (field[index] == "oldPassword"  && inputs[field[index]] != currentUser?.password) {
             handleError("Le mot de passe actuel ne correspond pas", "oldPassword");
             isValid = false;
           }
@@ -215,10 +219,9 @@ export default function HomeScreen({ navigation }) {
     
     setTimeout(() => {
       try {
-      user = { ...userData, [field]: value };
-      AsyncStorage.setItem("userData", JSON.stringify(user));
+      user = { ...currentUser, [field]: value };
+      AsyncStorage.setItem("currentUser", JSON.stringify(user));
 
-      console.log(user);
 
       setLoading(false);
       Toast.show({
@@ -243,30 +246,15 @@ export default function HomeScreen({ navigation }) {
 
 
   const handleLogout = () =>{
-    if (userData) {
-      user = { ...userData, loggedIn: false };
-      AsyncStorage.setItem("userData", JSON.stringify(user));
+    if (currentUser) {
+      user = { ...currentUser, loggedIn: false };
+      AsyncStorage.setItem("currentUser", JSON.stringify(user));
       navigation.navigate("LoginScreen");
     }
   }
 
   
 
-
-
-  const [imgProfile,setImgProfile] = useState(null);
-
-const __loadUserProfile = async ()=>{
-  try{
-    let profileUri = await AsyncStorage.getItem("profileUri");
-    if(profileUri){
-      setImgProfile(profileUri);
-    }
-   
-  }catch{
-  }
- 
-};
 
 const __DateFormatter = (dateString) =>{
   const [month, day, year] = dateString.split('/');
@@ -291,7 +279,7 @@ const handleError = (error, input) => {
   }));
 };
 
-  useEffect(() => {__loadUserProfile()},[]);
+
 
   const { setImg } = useContext(ImgContext);
 
@@ -401,14 +389,34 @@ const handleError = (error, input) => {
   /********************************************************/
   const [image, setImage] = useState([]);
 
+  
+
   const pickImageProfile = async () => {
     let profileImage = await ImagePicker.launchImageLibraryAsync({
       mediaTypes:ImagePicker.MediaTypeOptions.photo,
       quality: 1,
     }); 
     if (!profileImage.canceled) {
-      setImgProfile(profileImage.assets[0].uri);
-      AsyncStorage.setItem("profileUri",profileImage.assets[0].uri);
+      console.log(profileImage);
+      try {
+        const storageRef = ref(storage, `images/${Date.now() + currentUser?.displayName}`);
+    
+        const uploadTask = uploadBytesResumable(storageRef, profileImage.assets[0]).then(
+          
+          () => {
+            getDownloadURL(storageRef).then(async (downloadURL) => {
+              //update user profile
+              await updateProfile(currentUser, {
+                photoURL: downloadURL,
+              });
+
+            });
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+     
     }
    
   }
@@ -447,18 +455,7 @@ const handleError = (error, input) => {
     }
   },[image])
 
-  /*******************************************************/
-  const [userData, setUserData] = useState({});
-
-  const userInfo = async () => {
-    let user = await AsyncStorage.getItem("userData");
-    user = JSON.parse(user);
-    setUserData(user);
-  };
-  useEffect(() => {
-    userInfo();
-  }, []);
-
+ 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -643,16 +640,16 @@ const handleError = (error, input) => {
             <View style={{alignItems:"center",justifyContent:"center", flexDirection: "column", gap: 10}}>
               <TouchableOpacity style={styles.profilePic} onPress={pickImageProfile}>
                 {
-                  !imgProfile?
+                  !currentUser?.photoURL?
                 
                 
                 <Text style={{fontSize: 28, color: "#fff", fontFamily: 'PTSans-regular',}}>
-                  {userData && userData?.userName?.charAt(0)}
+                  {currentUser && currentUser?.displayName?.charAt(0)}
                 </Text>
                 
                 :
                   <Image
-                    source={ {uri:imgProfile}}
+                    source={ {uri:currentUser?.photoURL}}
                     style={styles.imageProfileSize}
                   />
                 }
@@ -661,11 +658,11 @@ const handleError = (error, input) => {
               <View style={{alignItems:"center",justifyContent:"center"}}>
 
                 <Text style={{fontFamily: 'PTSans-regular', fontSize: 16 }}>
-                  {userData?.userName}
+                  {currentUser?.displayName}
                 </Text>
 
                 <Text style={{fontSize: 12, color: "#A7A7A7", fontFamily: 'PTSans-regular', fontSize: 12 }}>
-                  {userData?.date && __DateFormatter(userData?.date)}
+                  {currentUser?.date && __DateFormatter(currentUser?.date)}
                   </Text>
               </View>
 
@@ -925,12 +922,12 @@ const handleError = (error, input) => {
             <Input
               label="Nom d’utilisateur"
               iconName="person-outline"
-              error={errors.userName}
+              error={errors.displayName}
               onFocus={() => {
-                handleError(null,"userName");
+                handleError(null,"displayName");
               }}
               placeholder="Ecrivez ici..."
-              onChangeText={(text)=>handleOnChange(text,"userName")}
+              onChangeText={(text)=>handleOnChange(text,"displayName")}
             />
             </View>
 
@@ -943,7 +940,7 @@ const handleError = (error, input) => {
               </TouchableOpacity>
 
               <View style={{width: 266 }}>
-                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("userName", inputs?.userName)} activeOpacity={0.7}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("displayName", inputs?.displayName)} activeOpacity={0.7}>
                   <Text style={styles.text}>Enregistrer</Text>
                 </TouchableOpacity>
               

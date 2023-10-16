@@ -21,7 +21,7 @@ import * as Font from 'expo-font';
 import { Provider } from 'react-redux';
 import store from "./src/redux/store";
 import { TransitionPresets } from "@react-navigation/stack";
-
+import UseAuth from "./src/custom-hooks/useAuth";
 
 
 const Stack = createNativeStackNavigator();
@@ -29,6 +29,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const [initialRouteName, setInitialRouteName] = useState("");
 
+  const { currentUser } = UseAuth();
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -48,7 +49,7 @@ export default function App() {
   useEffect(() => {
     setTimeout(() => {
       authUser();
-    }, 2000);
+    }, 1000);
   }, []);
 
   
@@ -57,11 +58,12 @@ export default function App() {
 
   const authUser = async () => {
     try {
-      let userData = await AsyncStorage.getItem("userData");
-      console.log(userData);
-      if (userData) {
-        userData = JSON.parse(userData);
-        if (userData.loggedIn) {
+      
+    
+      let test = await AsyncStorage.getItem("test");
+
+      if (test == "true") {
+        if (currentUser) {
           setInitialRouteName("HomeScreen");
         } else {
           setInitialRouteName("LoginScreen");

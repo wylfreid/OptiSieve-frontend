@@ -11,9 +11,17 @@ import Logo from "../../../assets/images/Logo";
 import RBSheet from 'react-native-raw-bottom-sheet';
 import  Icon  from "react-native-vector-icons/FontAwesome";
 
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../firebase.config";
+import UseAuth from "../../custom-hooks/useAuth";
+
+
+
 
 
 export default function LoginScreen({ navigation }) {
+
+  const { currentUser } = UseAuth();
 
   StatusBar.setBarStyle('dark-content');
   StatusBar.setBackgroundColor('#fff');
@@ -24,23 +32,35 @@ export default function LoginScreen({ navigation }) {
 
   const [allowResend, setAllowResend] = useState(false);
 
-  const bottomSheetRef2 = useRef(null);
-  const bottomSheetRef = useRef();
+  const passwordResetModal = useRef(null);
+  const resetLinkModal = useRef(null);
 
-  const openBottomSheet = () => {
-    bottomSheetRef.current.open();
+  const openBottomSheet = (ref) => {
+    if (ref == passwordResetModal) {
+      
+      passwordResetModal.current?.open();
+      
+    }else if(ref == resetLinkModal){
+
+      passwordResetModal.current?.close();
+      resetLinkModal.current?.open();
+
+    }
   };
 
-  const closeBottomSheet = () => {
-    bottomSheetRef.current.close();
-  };
+ 
+  
 
-  const openBottomSheet2 = () => {
-    bottomSheetRef2.current.open();
-  };
+  const closeBottomSheet = (ref) => {
+    if (ref == passwordResetModal) {
+      
+      passwordResetModal.current?.close();
+      
+    }else if(ref == resetLinkModal){
+      
+      resetLinkModal.current?.close();
 
-  const closeBottomSheet2 = () => {
-    bottomSheetRef2.current.close();
+    }
   };
 
   const Compteur = () => {
@@ -117,24 +137,20 @@ export default function LoginScreen({ navigation }) {
 
   const onPasswordReset = async () => {
 
-    let userData = await AsyncStorage.getItem("userData");
-
     
 
-    closeBottomSheet()
+    closeBottomSheet(passwordResetModal)
     setLoading(true);
     setTimeout(() => {
       try {
 
-        if (userData) {
+        if (currentUser) {
 
-          userData = JSON.parse(userData);
-
-        if (userData.email == inputs.email_reset) {
+        if (currentUser.email == inputs.email_reset) {
           setLoading(false);
   
-          closeBottomSheet()
-          openBottomSheet2()
+          closeBottomSheet(passwordResetModal)
+          openBottomSheet(resetLinkModal)
           Compteur()
 
         }else{
@@ -149,33 +165,7 @@ export default function LoginScreen({ navigation }) {
 
         setLoading(false);
         
-        /* if (userData) {
-
-          const inputsData = {
-            ...userData,
-            password: inputs.email
-          }
-          AsyncStorage.setItem("userData", JSON.stringify(inputsData));
-
-          setLoading(false);
-
-          closeBottomSheet()
-
-          Toast.show({
-            type: "success",
-            text1: "Confirmation",
-            text2: "Votre mot de passe a été réinitialisé avec succès",
-            position:"bottom"
-          });
-        }else{
-          setLoading(false);
-          Toast.show({
-            type: "error",
-            text1: "Erreur",
-            text2: "ce compte n'existe pas",
-            position:"bottom"
-          });
-        } */
+   
       } catch (error) {
         setLoading(false);
         Toast.show({
@@ -190,49 +180,30 @@ export default function LoginScreen({ navigation }) {
   
 
   const login = async () => {
-    let userData = await AsyncStorage.getItem("userData");
-    console.log(userData);
+
     setLoading(true);
-    setTimeout(() => {
+
       try {
         
-        if (userData) {
-          
-          userData = JSON.parse(userData);
-          let userName = userData.userName;
-          if (
-            userData.email == inputs.email && userData.password == inputs.password || 
-            userData.userName == inputs.email && userData.password == inputs.password
-          ) {
-            userData = { ...userData, loggedIn: true };
-            AsyncStorage.setItem("userData", JSON.stringify(userData));
+            const userCredential = await signInWithEmailAndPassword(
+              auth,
+              inputs.email,
+              inputs.password
+            );
+
+            const user = userCredential.user;
+            //console.log(user);
+      
+            await AsyncStorage.setItem("test", "true");
+
             navigation.navigate("HomeScreen");
             setLoading(false);
             Toast.show({
               type: "success",
               text1: "Succès",
-              text2: "Vous êtes maintenant connecté en tant que "+ userName,
+              text2: "Vous êtes maintenant connecté en tant que " + user?.displayName,
               position:"top"
             });
-          } else {
-            setLoading(false);
-            Toast.show({
-              type: "error",
-              text1: "Erreur de connection",
-              text2: "Veuillez verifier votre email ou mot de passe",
-              position:"top"
-            });
-          }
-        }else{
-          setLoading(false);
-            Toast.show({
-              type: "error",
-              text1: "Erreur de connection",
-              text2: "Veuillez verifier votre email ou mot de passe",
-              position:"top"
-            });
-
-        }
 
         
       } catch (error) {
@@ -240,11 +211,10 @@ export default function LoginScreen({ navigation }) {
         Toast.show({
           type: "error",
           text1: "Erreur de connection",
-          text2: "une erreur inattendue s'est produite, veuillez réessayer.",
-          position:"bottom"
+          text2: "informations d'identification incorrectes.",
+          position:"top"
         });
       }
-    }, 3000);
   };
 
   const handleOnChange = (text, input) => {
@@ -260,6 +230,7 @@ export default function LoginScreen({ navigation }) {
       [input]: error,
     }));
   };
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white, marginTop: StatusBar.currentHeight }}>
@@ -306,7 +277,7 @@ export default function LoginScreen({ navigation }) {
             password = {true}
           />
 
-          <TouchableOpacity onPress={openBottomSheet} style={{ marginBottom: 50 ,justifyContent: "space-between", flexDirection: "row", marginTop: 5}}>
+          <TouchableOpacity onPress={() => openBottomSheet(passwordResetModal)} style={{ marginBottom: 50 ,justifyContent: "space-between", flexDirection: "row", marginTop: 5}}>
 
           <Text style={{fontSize:13, textAlign:"center", color: "grey", fontFamily: 'PTSans-regular'}} 
           > Mot de passe oublié?</Text>
@@ -327,7 +298,7 @@ export default function LoginScreen({ navigation }) {
           </TouchableOpacity>
 
           <RBSheet
-            ref={bottomSheetRef}
+            ref={passwordResetModal}
             height={310}
             openDuration={250}
             closeOnDragDown={true}
@@ -357,11 +328,12 @@ export default function LoginScreen({ navigation }) {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"email_reset")}
+              value={inputs.email_reset}
             />
             </View>
 
             <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>closeBottomSheet()} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+              <TouchableOpacity onPress={() =>closeBottomSheet(passwordResetModal)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="angle-left"
                   style={{ fontSize: 36, color: "#fff"}}
@@ -384,7 +356,7 @@ export default function LoginScreen({ navigation }) {
 
 
           <RBSheet
-            ref={bottomSheetRef2}
+            ref={resetLinkModal}
             height={310}
             openDuration={250}
             closeOnDragDown={true}
@@ -417,7 +389,7 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>[closeBottomSheet2(), openBottomSheet()]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+              <TouchableOpacity onPress={() =>[closeBottomSheet(resetLinkModal), openBottomSheet(passwordResetModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="angle-left"
                   style={{ fontSize: 36, color: "#fff"}}
