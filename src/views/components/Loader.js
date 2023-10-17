@@ -9,15 +9,47 @@ import {
   StatusBar
 } from "react-native";
 import COLORS from "../../const/colors";
+import Logo from "../../../assets/images/Logo";
+import LottieView from 'lottie-react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function Loader({ visible = false, title = "Loading..." }) {
+
+
+export default function Loader({ visible = false, title = "Chargement..." }) {
   const { width, height } = useWindowDimensions();
   return (
     visible && (
       <View style={[styles.container, { width, height: height + StatusBar.currentHeight }]}>
-        <View style={styles.loader}>
-          <ActivityIndicator size={"large"} color={COLORS.purple} />
-          <Text style={styles.textLoader}>{title}</Text>
+
+        <View style={styles.topContainer}>
+          <Logo/>
+          
+        </View>
+
+        <View style={styles.middleContainer}>
+        <View style={{height: width/1.2, width: width}}>
+          <LottieView
+            source={require('../../../assets/images/lotties/brain.json')} // Remplacez par le chemin de votre fichier d'animation JSON
+            autoPlay
+            loop
+          />
+        </View>
+
+        <Text style={styles.textLoader}>{title}</Text>
+        </View>
+
+        <View style={styles.bottomContainer}>
+  
+
+                <View style={{marginHorizontal: 40, marginBottom: 20}}>
+
+                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.black, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 }]} onPress={() => {}} activeOpacity={0.7}>
+                  <Icon name={"close-circle-outline"}  style={{color:"#fff",fontSize:30}}/>
+                    <Text style={styles.text}>Annuler l’analyse</Text>
+                  </TouchableOpacity>
+                
+                </View>
+
         </View>
       </View>
     )
@@ -28,10 +60,32 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
     zIndex: 10,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(255,255,255,1)",
     justifyContent: "center",
+    flex: 1
     //marginTop: StatusBar.currentHeight
   },
+
+  topContainer: {
+    flex: 0.25,
+    alignItems: "center",
+    justifyContent: "center",
+    /* backgroundColor: COLORS.purple, */
+  },
+  middleContainer: {
+    flex: 0.5,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 20,
+    gap: 5,
+  },
+  bottomContainer: {
+    /* flex: 0.2, */
+    flex: 0.25,
+    justifyContent: "flex-end",
+  },
+
+
   loader: {
     height: 70,
     backgroundColor: COLORS.white,
@@ -42,7 +96,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   textLoader: {
-    marginLeft: 10,
-    fontSize: 16,
+    fontSize: 19,
+    fontFamily: 'PTSans-regular',
+    fontWeight: "bold"
+  },
+
+  button: {
+    height:55,
+    width:"100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius:8,
+  },
+
+  text:{
+    fontSize:16,
+    fontFamily: 'PTSans-regular', 
+    color:COLORS.white
   },
 });

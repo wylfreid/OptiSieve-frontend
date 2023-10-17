@@ -64,6 +64,9 @@ export default function RegistrationScreen({ navigation }) {
     if (!inputs.password) {
       handleError("Veuillez saisir votre mot de passe", "password");
       isValid = false;
+    }else if(inputs.password && inputs.password.length < 6){
+      handleError("le mot de passe doit comporter au moins 6 caractères", "password");
+      isValid = false;
     }
 
     if (!inputs.password_confirm) {

@@ -6,7 +6,7 @@ const useGetData = (collectionName) => {
   const [data, setData] = useState([]);
   const collectionRef = collection(db, collectionName);
 
-  const [loading, seLoading] = useState(true);
+  const [load, seLoad] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
@@ -14,14 +14,14 @@ const useGetData = (collectionName) => {
 
       await onSnapshot(collectionRef, (snapshot) => {
         setData(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        seLoading(false);
+        seLoad(false);
       });
     };
 
     getData();
   }, []);
 
-  return { data, loading };
+  return { data, load };
 };
 
 export default useGetData;

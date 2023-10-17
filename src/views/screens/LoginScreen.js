@@ -11,17 +11,17 @@ import Logo from "../../../assets/images/Logo";
 import RBSheet from 'react-native-raw-bottom-sheet';
 import  Icon  from "react-native-vector-icons/FontAwesome";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase.config";
 import UseAuth from "../../custom-hooks/useAuth";
-
+import useGetData from "../../custom-hooks/useGetData";
 
 
 
 
 export default function LoginScreen({ navigation }) {
 
-  const { currentUser } = UseAuth();
+  const {data: users, load} = useGetData("users")
 
   StatusBar.setBarStyle('dark-content');
   StatusBar.setBackgroundColor('#fff');
@@ -37,8 +37,13 @@ export default function LoginScreen({ navigation }) {
 
   const openBottomSheet = (ref) => {
     if (ref == passwordResetModal) {
+
+      if (timer == 60) {
+        passwordResetModal.current?.open();
+      }else{
+        resetLinkModal.current?.open();
+      }
       
-      passwordResetModal.current?.open();
       
     }else if(ref == resetLinkModal){
 
@@ -130,52 +135,54 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleResendMail = () => {
-    setAllowResend(false)
-    setTimer(60)
-    Compteur()
+    sendPasswordResetEmail(auth, inputs.email_reset)
+    .then(() => {
+      setAllowResend(false)
+      setTimer(60)
+      Compteur()
+    })
+    
   }
 
   const onPasswordReset = async () => {
-
     
+    let result = []
+    result = users?.filter(
+      (item) => item?.email === inputs.email_reset
+    );
 
-    closeBottomSheet(passwordResetModal)
-    setLoading(true);
-    setTimeout(() => {
+
+    if (result.length > 0) {
+      
       try {
-
-        if (currentUser) {
-
-        if (currentUser.email == inputs.email_reset) {
-          setLoading(false);
   
-          closeBottomSheet(passwordResetModal)
-          openBottomSheet(resetLinkModal)
-          Compteur()
-
-        }else{
-          openBottomSheet()
-          handleError("Ce compte n'existe pas", "email_reset");
+            closeBottomSheet(passwordResetModal)
+            
+            setLoading(true);
+            sendPasswordResetEmail(auth, inputs.email_reset)
+            .then(() => {
+              closeBottomSheet(passwordResetModal)
+              openBottomSheet(resetLinkModal)
+              Compteur()
+              setLoading(false);
+            })
+            
+  
+          } 
+     
+         catch (error) {
+          setLoading(false);
+          Toast.show({
+            type: "error",
+            text1: "Erreur",
+            text2: error,
+            position:"bottom"
+          });
         }
+    }else{
+      handleError("ce compte n'existe pas", "email_reset");
+    }
 
-      }else{
-        openBottomSheet()
-        handleError("Ce compte n'existe pas", "email_reset");
-      }
-
-        setLoading(false);
-        
-   
-      } catch (error) {
-        setLoading(false);
-        Toast.show({
-          type: "error",
-          text1: "Error",
-          text2: error,
-          position:"bottom"
-        });
-      }
-    }, 3000);
   }
   
 
@@ -195,6 +202,7 @@ export default function LoginScreen({ navigation }) {
             //console.log(user);
       
             await AsyncStorage.setItem("test", "true");
+            await AsyncStorage.setItem("loggedIn", "true");
 
             navigation.navigate("HomeScreen");
             setLoading(false);
@@ -237,7 +245,7 @@ export default function LoginScreen({ navigation }) {
       <Loader visible={loading} />
 
       <View style={[styles.topContainer, {height: height/5.2}]}>
-        <Logo/>
+        c
       </View>
 
       <View style={[styles.midlleContainer, {height: height/8.8}]}>
@@ -389,7 +397,7 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>[closeBottomSheet(resetLinkModal), openBottomSheet(passwordResetModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+              <TouchableOpacity disabled={!allowResend} onPress={() =>[closeBottomSheet(resetLinkModal), passwordResetModal.current?.open()]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: !allowResend ? "#DBDBDB" : COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="angle-left"
                   style={{ fontSize: 36, color: "#fff"}}

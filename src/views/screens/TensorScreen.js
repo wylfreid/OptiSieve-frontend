@@ -17,13 +17,20 @@ import Icon from "react-native-vector-icons/Ionicons";
 import COLORS from "../../const/colors";
 import ResultContext from "../../hooks/ResultContext";
 import Carousel from "../components/Carousel";
+import { useSelector } from "react-redux";
+import { addDoc, collection } from "firebase/firestore";
+import { db, storage } from "../../firebase.config";
+import { ref, uploadBytesResumable } from "firebase/storage";
+
+
 
 
 const options = { encoding: FileSystem.EncodingType.Base64 };
 
 export default function TensorScreen({ navigation }) {
 
-  const { img } = useContext(ImgContext);
+  const images = useSelector((state) => state.images);
+
   const { setResult } = useContext(ResultContext);
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -33,7 +40,7 @@ export default function TensorScreen({ navigation }) {
       console.log("[+] Application started");
       //Wait for tensorflow module to be ready
       const tfReady = await tf.ready();
-      console.log("[+] Loading pre-trained face detection model");
+      console.log("[+] Loading pre-trained images detection model");
       //Replce model.json and group1-shard.bin with your own custom model
       const modelJson = await require("../../../assets/model/model.json");
       const modelWeights1 = await require("../../../assets/model/group1-shard1of41.bin");
@@ -112,20 +119,20 @@ export default function TensorScreen({ navigation }) {
   const appliedNetwork = async () => {
     try {
       setIsLoaded(false);
-      console.log("[+] Retrieving image 1 from link :" + img[0]?.uri);
+      console.log("[+] Retrieving image 1 from link :" + images[0]?.uri);
 
       // read the image as base64 and create buffer
-      const img64Top = await FileSystem.readAsStringAsync(img[0]?.uri, options);
+      const img64Top = await FileSystem.readAsStringAsync(images[0]?.uri, options);
       const imgBufferTop = tf.util.encodeString(img64Top, "base64").buffer;
       const rawImageDataTop = new Uint8Array(imgBufferTop);
 
       let imageTensorTop = imageToTensor(rawImageDataTop).resizeBilinear([299,299]);
 
 
-      console.log("[+] Retrieving image 2 from link :" + img[1]?.uri);
+      console.log("[+] Retrieving image 2 from link :" + images[1]?.uri);
       
       // read the image as base64 and create buffer
-      const img64Down = await FileSystem.readAsStringAsync(img[1]?.uri, options);
+      const img64Down = await FileSystem.readAsStringAsync(images[1]?.uri, options);
       const imgBufferDown = tf.util.encodeString(img64Down, "base64").buffer;
       const rawImageDataDown = new Uint8Array(imgBufferDown);
 
@@ -151,6 +158,53 @@ export default function TensorScreen({ navigation }) {
       setResult(accumuledResult);
 
       console.log("_______Successfully predicted particle size curve");
+
+
+      let newAnalysis_infos = await AsyncStorage.getItem("newAnalysis_infos")
+
+      newAnalysis_infos = JSON.parse(newAnalysis_infos)
+
+      try {
+
+        const docRef = await collection(db, "analysis");
+
+        const response1 = await fetch(images[0]?.uri);
+        const response2 = await fetch(images[1]?.uri);
+        const blob1 = await response1.blob();
+        const blob2 = await response2.blob();
+
+        const storageRef1 = ref(storage, `Analysis_images/${Date.now() + "top-" + newAnalysis_infos?.sample_name}`);
+        const storageRef2 = ref(storage, `Analysis_images/${Date.now() + "bottom-" + newAnalysis_infos?.sample_name}`);
+    
+        let url1 = ""
+
+        const uploadTask1 = uploadBytesResumable(storageRef1, blob1).then(
+          
+          () => {
+            getDownloadURL(storageRef1).then(async (downloadURL1) => {
+              url1 = downloadURL1
+
+          });
+  
+          }
+        );
+
+        const uploadTask2 = uploadBytesResumable(storageRef2, blob2).then(
+          
+          () => {
+            getDownloadURL(storageRef2).then(async (downloadURL2) => {
+              await addDoc(docRef, {
+                ...newAnalysis_infos,
+                images: [url1, downloadURL2]
+              });
+
+          });
+  
+          }
+        );
+      } catch (err) {
+      }
+
       setIsLoaded(true);
       navigation.navigate('ResultScreen');
     } catch (error) {
@@ -180,7 +234,7 @@ export default function TensorScreen({ navigation }) {
       
           <View style={styles.container}>
 
-          <Carousel imageTop={img[0]} imageBottom={img[1]}/>
+          <Carousel imageTop={images[0]} imageBottom={images[1]}/>
             
           </View>
 

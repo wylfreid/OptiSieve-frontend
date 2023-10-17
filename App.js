@@ -18,16 +18,17 @@ import { Animated } from 'react-native';
 
 import * as Font from 'expo-font';
 
-import { Provider } from 'react-redux';
+import { Provider} from 'react-redux';
 import store from "./src/redux/store";
 import { TransitionPresets } from "@react-navigation/stack";
 import UseAuth from "./src/custom-hooks/useAuth";
 
 
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [initialRouteName, setInitialRouteName] = useState("");
+  const [initialRouteName, setInitialRouteName] = useState(null);
 
   const { currentUser } = UseAuth();
 
@@ -36,24 +37,18 @@ export default function App() {
       'PTSans-regular': require('./assets/fonts/PT_Sans/PTSans-Regular.ttf'),
       'PTSans-bold': require('./assets/fonts/PT_Sans/PTSans-Bold.ttf'),
       'poppins-regular': require('./assets/fonts/Poppins/Poppins-Regular.ttf'),
-      'poppins-bold': require('./assets/fonts/Poppins/Poppins-Bold.ttf'),
-      'poppins-italic': require('./assets/fonts/Poppins/Poppins-Italic.ttf'),
-      'poppins-semiBold': require('./assets/fonts/Poppins/Poppins-SemiBold.ttf'),
     });
+    
   }
 
   useEffect(()=>{
     loadFonts()
   })
 
-  useEffect(() => {
-    setTimeout(() => {
-      authUser();
-    }, 1000);
-  }, []);
-
+  setTimeout(() => {
+    authUser();
+  }, 1500)
   
-
   //AsyncStorage.clear()
 
   const authUser = async () => {
@@ -62,8 +57,10 @@ export default function App() {
     
       let test = await AsyncStorage.getItem("test");
 
+      let loggedIn = await AsyncStorage.getItem("loggedIn");
+
       if (test == "true") {
-        if (currentUser) {
+        if (loggedIn == "true") {
           setInitialRouteName("HomeScreen");
         } else {
           setInitialRouteName("LoginScreen");

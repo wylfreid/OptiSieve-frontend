@@ -41,15 +41,57 @@ import UseAuth from "../../custom-hooks/useAuth";
 
 
 
-import {updateProfile } from "firebase/auth";
-import { storage } from "../../firebase.config";
+import {EmailAuthProvider, reauthenticateWithCredential, signOut, updateEmail, updatePassword, updateProfile } from "firebase/auth";
+import { auth, db, storage } from "../../firebase.config";
 
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { CommonActions } from "@react-navigation/native";
+import { doc, updateDoc } from "firebase/firestore";
+
+
+
+import { useDispatch, useSelector } from 'react-redux';
+import { userActions } from "../../redux/slices/userSlice";
+import useGetData from "../../custom-hooks/useGetData";
+import { imgActions } from "../../redux/slices/imgSlice";
+
+import LottieView from 'lottie-react-native';
+
 
 let camera;
 export default function HomeScreen({ navigation }) {
 
-  const { currentUser } = UseAuth();
+  const { currentUser} = UseAuth();
+
+  const user = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
+
+  
+
+  const {data: users, load} = useGetData("users")
+
+  //console.log(users);
+
+  useEffect(()=>{
+
+    const getUserData = () =>{
+
+      if (users?.length > 0){
+        let result = []
+        result = users?.filter(
+          (item) => item?.uid === currentUser?.uid
+        );
+
+        dispatch(userActions.addUser(result[0]))
+      }
+    }
+
+    getUserData()
+    
+  },[users, currentUser])
+  
+  //console.log(users?.length);
 
   StatusBar.setBarStyle('dark-content');
   StatusBar.setBackgroundColor('#fff');
@@ -116,7 +158,6 @@ export default function HomeScreen({ navigation }) {
   };
 
  
-  
 
   const closeBottomSheet = (ref) => {
     if (ref == newAnalysis) {
@@ -164,7 +205,7 @@ export default function HomeScreen({ navigation }) {
 
     Keyboard.dismiss();
 
-    if (currentUser) {
+    if (user) {
     
       let isValid = true;
 
@@ -174,10 +215,6 @@ export default function HomeScreen({ navigation }) {
        
         for (let index = 0; index < field.length; index++) {
 
-          if (field[index] == "oldPassword"  && inputs[field[index]] != currentUser?.password) {
-            handleError("Le mot de passe actuel ne correspond pas", "oldPassword");
-            isValid = false;
-          }
 
           if (field[index] == "newPasswordConfirm"  && inputs[field[index]] != inputs.newPassword) {
             handleError("Le mot de passe est différent", "newPasswordConfirm");
@@ -195,6 +232,8 @@ export default function HomeScreen({ navigation }) {
         value = value[value.length - 1]
         
       }else{
+
+        
         
         if (field == "email" && !inputs.email.match(/\S+@\S+\.\S+/)) {
           handleError("Veuillez saisir un email valide", "email");
@@ -213,23 +252,69 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
-  const update = (field,value) =>{
+  const update = async (field,value) =>{
     setLoading(true);
     closeAllBottomSheet()
-    
-    setTimeout(() => {
-      try {
-      user = { ...currentUser, [field]: value };
-      AsyncStorage.setItem("currentUser", JSON.stringify(user));
 
+      try {
+
+
+      if (field == "password") {
+        const credential = EmailAuthProvider.credential(
+          currentUser.email,
+          inputs?.oldPassword
+        );
+
+    
+        reauthenticateWithCredential(currentUser,credential)
+          .then(() => {
+            return updatePassword(currentUser,inputs?.newPassword);
+          })
+          .then(() => {
+            console.log('Mot de passe mis à jour avec succès.');
+            
+            Toast.show({
+              type: "success",
+              text1: "Succès",
+              text2: "Les modifications on été enregistrées",
+              position:"top"
+            });
+          })
+          .catch((error) => {
+            console.error('Erreur lors de la mise à jour du mot de passe :', error);
+            Toast.show({
+              type: "error",
+              text1: "Erreur de connection",
+              text2: "le mot de passe actuel ne correspond pas, veuillez réessayer.",
+              position:"top"
+            });
+          });
+      }else if(field == "displayName"){
+        await updateDoc(doc(db, "users", user?.uid), {
+          displayName: inputs.displayName,
+        });
+        Toast.show({
+          type: "success",
+          text1: "Succès",
+          text2: "Les modifications on été enregistrées",
+          position:"top"
+        });
+      }else if(field == "email"){
+        updateEmail(currentUser,inputs?.email);
+        await updateDoc(doc(db, "users", currentUser?.uid), {
+          email: inputs.email,
+        }); 
+
+        Toast.show({
+          type: "success",
+          text1: "Succès",
+          text2: "Les modifications on été enregistrées",
+          position:"top"
+        });
+      }
 
       setLoading(false);
-      Toast.show({
-        type: "success",
-        text1: "Succès",
-        text2: "Les modifications on été enregistrées",
-        position:"top"
-      });
+      
 
       }catch (error) {
         setLoading(false);
@@ -237,20 +322,44 @@ export default function HomeScreen({ navigation }) {
           type: "error",
           text1: "Erreur de connection",
           text2: "une erreur inattendue s'est produite, veuillez réessayer.",
-          position:"bottom"
+          position:"top"
         });
       }
-    }, 3000);
   }
 
 
-
   const handleLogout = () =>{
-    if (currentUser) {
-      user = { ...currentUser, loggedIn: false };
-      AsyncStorage.setItem("currentUser", JSON.stringify(user));
+    signOut(auth).then( async () => {
+      // Sign-out successful.
+
+      await AsyncStorage.setItem("loggedIn", "false");
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0, // Indiquez l'index de l'écran que vous souhaitez garder (0 pour conserver le premier écran).
+          routes: [
+            // Liste des écrans que vous souhaitez conserver après la réinitialisation.
+            { name: 'LoginScreen' },
+          ],
+        })
+      );
+      Toast.show({
+        type: "success",
+        text1: "Succès",
+        text2: "Vous avez été déconnecté avec succès",
+        position:"top"
+      });
       navigation.navigate("LoginScreen");
-    }
+    }).catch((error) => {
+      // An error happened.
+      Toast.show({
+        type: "error",
+        text1: "Erreur de connection",
+        text2: "une erreur inattendue s'est produite, veuillez réessayer.",
+        position:"top"
+      });
+    });
+      
   }
 
   
@@ -280,8 +389,6 @@ const handleError = (error, input) => {
 };
 
 
-
-  const { setImg } = useContext(ImgContext);
 
   const [imageNumber, setImageNumber] = useState("Top image");
   /*********************************************************/
@@ -354,8 +461,11 @@ const handleError = (error, input) => {
     }
   };
 
-  function __savePhoto(picture) {
-    setImg(picture);
+  async function __savePhoto(picture) {
+    
+    dispatch(imgActions.addImages(picture))
+    
+    await AsyncStorage.setItem("newAnalysis_infos", JSON.stringify({sample_name : inputs.sample_name, depth: inputs.depth, source: inputs.source}));
     navigation.navigate("TensorScreen");
   }
 
@@ -389,19 +499,30 @@ const handleError = (error, input) => {
   /********************************************************/
   const [image, setImage] = useState([]);
 
-  
+  const [imgProfile, setImgProfile] = useState(null);
+
+  useEffect(()=>{
+    if (currentUser) {
+      setImgProfile(currentUser?.photoURL)
+    }
+  }, [currentUser])
 
   const pickImageProfile = async () => {
     let profileImage = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes:ImagePicker.MediaTypeOptions.photo,
+      mediaTypes:ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
       quality: 1,
     }); 
     if (!profileImage.canceled) {
-      console.log(profileImage);
       try {
+
+        const response = await fetch(profileImage.assets[0]?.uri);
+        const blob = await response.blob();
+
         const storageRef = ref(storage, `images/${Date.now() + currentUser?.displayName}`);
     
-        const uploadTask = uploadBytesResumable(storageRef, profileImage.assets[0]).then(
+        const uploadTask = uploadBytesResumable(storageRef, blob).then(
           
           () => {
             getDownloadURL(storageRef).then(async (downloadURL) => {
@@ -412,7 +533,10 @@ const handleError = (error, input) => {
 
             });
           }
+          
         );
+
+        setImgProfile(profileImage.assets[0]?.uri)
       } catch (error) {
         console.log(error);
       }
@@ -455,7 +579,31 @@ const handleError = (error, input) => {
     }
   },[image])
 
- 
+
+  const handleInitAnalyse = () => {
+    let isValid = true;
+
+    if (inputs.sample_name?.length == 0) {
+      handleError(`Veuillez remplir ce champ`, "sample_name");
+      isValid = false;
+    }
+
+    if (inputs.depth?.length == 0) {
+      handleError(`Veuillez remplir ce champ`, "depth");
+      isValid = false;
+    }
+
+    if (inputs.source?.length == 0) {
+      handleError(`Veuillez remplir ce champ`, "source");
+      isValid = false;
+    }
+
+    if (isValid) {
+      openBottomSheet(importModal)
+    }
+
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -640,16 +788,16 @@ const handleError = (error, input) => {
             <View style={{alignItems:"center",justifyContent:"center", flexDirection: "column", gap: 10}}>
               <TouchableOpacity style={styles.profilePic} onPress={pickImageProfile}>
                 {
-                  !currentUser?.photoURL?
+                  !imgProfile ?
                 
                 
                 <Text style={{fontSize: 28, color: "#fff", fontFamily: 'PTSans-regular',}}>
-                  {currentUser && currentUser?.displayName?.charAt(0)}
+                  {user && user?.displayName?.charAt(0)}
                 </Text>
                 
                 :
                   <Image
-                    source={ {uri:currentUser?.photoURL}}
+                    source={ {uri:imgProfile}}
                     style={styles.imageProfileSize}
                   />
                 }
@@ -658,11 +806,11 @@ const handleError = (error, input) => {
               <View style={{alignItems:"center",justifyContent:"center"}}>
 
                 <Text style={{fontFamily: 'PTSans-regular', fontSize: 16 }}>
-                  {currentUser?.displayName}
+                  {user?.displayName}
                 </Text>
 
                 <Text style={{fontSize: 12, color: "#A7A7A7", fontFamily: 'PTSans-regular', fontSize: 12 }}>
-                  {currentUser?.date && __DateFormatter(currentUser?.date)}
+                  {user?.date && __DateFormatter(user?.date)}
                   </Text>
               </View>
 
@@ -697,7 +845,7 @@ const handleError = (error, input) => {
 
           <RBSheet
             ref={newAnalysis}
-            height={421}
+            height={441}
             openDuration={250}
             closeOnDragDown={true}
             customStyles={{
@@ -716,7 +864,7 @@ const handleError = (error, input) => {
            </Text>
 
 
-           <View style={{marginHorizontal: 30, marginTop: 20  }}>
+           <ScrollView contentContainerStyle={{paddingTop: 35,paddingBottomBottom: 35, marginHorizontal: 30}}>
             <Input
               label="Nom de l’echantillon"
               iconName="finger-print-outline"
@@ -726,6 +874,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"sample_name")}
+              value={inputs.sample_name}
             />
 
             <Input
@@ -737,6 +886,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"depth")}
+              value={inputs.depth}
             />
 
             <Input
@@ -748,10 +898,9 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"source")}
+              value={inputs.source}
             />
-            </View>
-
-            <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+            <View style={{marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>closeBottomSheet(newAnalysis)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
@@ -760,7 +909,7 @@ const handleError = (error, input) => {
               </TouchableOpacity>
 
               <View style={{width: 266 }}>
-                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => openBottomSheet(importModal)} activeOpacity={0.7}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => handleInitAnalyse()} activeOpacity={0.7}>
                   <Text style={styles.text}>Importer les images</Text>
                 </TouchableOpacity>
               
@@ -768,6 +917,8 @@ const handleError = (error, input) => {
 
             
             </View>
+            </ScrollView>
+
 
           </RBSheet>
 
@@ -928,6 +1079,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"displayName")}
+              value={inputs?.displayName}
             />
             </View>
 
@@ -983,6 +1135,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"oldPassword")}
+              value={inputs.oldPassword}
             />
 
             <Input
@@ -994,6 +1147,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"newPassword")}
+              value={inputs.newPassword}
             />
 
             <Input
@@ -1005,6 +1159,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"newPasswordConfirm")}
+              value={inputs.newPasswordConfirm}
             />
             <View style={{marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>[closeBottomSheet(passwordEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
@@ -1059,6 +1214,7 @@ const handleError = (error, input) => {
               }}
               placeholder="Ecrivez ici..."
               onChangeText={(text)=>handleOnChange(text,"email")}
+              value={inputs.email}
             />
             </View>
 
