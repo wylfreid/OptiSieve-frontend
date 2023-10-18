@@ -245,7 +245,7 @@ export default function LoginScreen({ navigation }) {
       <Loader visible={loading} />
 
       <View style={[styles.topContainer, {height: height/5.2}]}>
-        c
+        <Logo />
       </View>
 
       <View style={[styles.midlleContainer, {height: height/8.8}]}>
