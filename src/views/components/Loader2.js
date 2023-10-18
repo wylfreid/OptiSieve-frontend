@@ -43,7 +43,7 @@ export default function Loader({ visible = false, title = "Analyse en cours..." 
 
                 <View style={{marginHorizontal: 40, marginBottom: 50}}>
 
-                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.black, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 }]} onPress={() => {}} activeOpacity={0.7}>
+                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.blackc }]} onPress={() => {}} activeOpacity={0.7}>
                   <Icon name={"close-circle-outline"}  style={{color:"#fff",fontSize:30}}/>
                     <Text style={styles.text}>Annuler l’analyse</Text>
                   </TouchableOpacity>

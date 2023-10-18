@@ -545,7 +545,6 @@ const handleError = (error, input) => {
    
   }
 
-console.log(user?.date);
 
   const pickImage = async () => {
 
