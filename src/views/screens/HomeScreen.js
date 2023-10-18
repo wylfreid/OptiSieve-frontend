@@ -366,7 +366,7 @@ export default function HomeScreen({ navigation }) {
 
 
 const __DateFormatter = (dateString) =>{
-  const [month, day, year] = dateString.split('/');
+  const [day, month,  year] = dateString.split('/');
   const date = new Date(year, month - 1, day);
   const options = { year: 'numeric', month: 'long' };
   const formattedDate = `Depuis ${date.toLocaleDateString('fr-FR', options)}`;
