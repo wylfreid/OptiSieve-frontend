@@ -3,7 +3,7 @@ import {
     View,
     TouchableOpacity,
     Image,
-    StatusBar,
+    StyleSheet,
   } from "react-native";
   import Icon from "react-native-vector-icons/Ionicons";
 import COLORS from "../../const/colors";
@@ -44,32 +44,45 @@ const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>
   
              <Carousel imageTop={photo[0]} imageBottom={photo[1]}/>
                 
-           
-        
-      
-                      <TouchableOpacity
-                        onPress={savePhoto}
-                        style={{
-                          width: "100%",
-                          height: 50,
-                          backgroundColor: COLORS.purple,
-                          alignItems: "center",
-                          justifyContent:"center",
-                         
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: COLORS.white,
-                            fontWeight:"bold",
-                            fontSize: 20,
-                          }}
-                        >
-                          Submit
-                        </Text>
-                      </TouchableOpacity>
+
+             <View style={{backgroundColor,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+                <TouchableOpacity onPress={() =>[closeBottomSheet(passwordEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                  <Icon
+                    name="chevron-back-outline"
+                    style={{ fontSize: 36, color: "#fff"}}
+                  />
+                </TouchableOpacity>
+
+                <View style={{width: 266 }}>
+                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={savePhoto} activeOpacity={0.7}>
+                    <Text style={styles.text}>Lancer l’analyse</Text>
+                  </TouchableOpacity>
+                
+                </View>
+
+            
+            </View>
               </View>
     );
   };
 
   export default CameraPreview;
+
+  const styles = StyleSheet.create({
+  
+    button: {
+      height:55,
+      width:"100%",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius:8,
+    },
+    
+    text:{
+      fontSize:16,
+      fontFamily: 'PTSans-regular', 
+      color:COLORS.white
+    },
+
+ 
+  });

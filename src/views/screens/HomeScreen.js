@@ -55,8 +55,8 @@ import { userActions } from "../../redux/slices/userSlice";
 import useGetData from "../../custom-hooks/useGetData";
 import { imgActions } from "../../redux/slices/imgSlice";
 
-import LottieView from 'lottie-react-native';
-
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 let camera;
 export default function HomeScreen({ navigation }) {
@@ -545,7 +545,7 @@ const handleError = (error, input) => {
    
   }
 
-
+console.log(user?.date);
 
   const pickImage = async () => {
 
@@ -810,7 +810,7 @@ const handleError = (error, input) => {
                 </Text>
 
                 <Text style={{fontSize: 12, color: "#A7A7A7", fontFamily: 'PTSans-regular', fontSize: 12 }}>
-                  {user?.date && __DateFormatter(user?.date)}
+                  {user?.date && "Depuis " + format(user?.date?.toDate(), "MMMM yyyy", { locale: fr })}
                   </Text>
               </View>
 
@@ -1196,7 +1196,7 @@ const handleError = (error, input) => {
             }}
           >
             <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
-            > Edition de l’adresse mail
+            > Edition de l’addresse mail
            </Text>
 
            <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 

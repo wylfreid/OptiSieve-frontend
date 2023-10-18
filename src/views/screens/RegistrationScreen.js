@@ -24,9 +24,11 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 
+
+
 import { auth, db } from "./../../firebase.config";
 
-import { setDoc, doc } from "firebase/firestore";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 
 import { storage } from "./../../firebase.config";
 
@@ -102,7 +104,7 @@ export default function RegistrationScreen({ navigation }) {
           uid: user.uid,
           displayName: inputs.displayName,
           email: inputs.email,
-          date: new Date().toLocaleDateString()
+          date: serverTimestamp(),
         });
 
 
