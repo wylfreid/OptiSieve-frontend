@@ -670,7 +670,7 @@ const handleError = (error, input) => {
               <Camera
                 type={cameraType}
                 flashMode={flashMode}
-                style={{ width: width, height: (2 / 3) * height }}
+                style={{ width: width, height: width }}
                 ref={(r) => {
                   camera = r;
                 }}
