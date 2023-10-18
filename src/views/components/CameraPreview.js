@@ -38,7 +38,7 @@ const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>
                 <Text style={{fontSize: 12}}>image de dessus</Text>
               </View>
 
-              <Image source={{ uri: photo[1]?.uri }} style={styles.image}/>
+              <Image source={{ uri: photo[0]?.uri }} style={styles.image}/>
 
            </View>
 
@@ -113,7 +113,6 @@ const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>
     image:{
       flex: 1,
       borderRadius: 8,
-      objectFit: "contain"
     }
 
  
