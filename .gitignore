@@ -11,6 +11,7 @@ npm-debug.*
 web-build/
 
 assets/model
+assets/classification_model
 
 # macOS
 .DS_Store

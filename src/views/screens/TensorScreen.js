@@ -12,7 +12,7 @@ import {bundleResourceIO } from "@tensorflow/tfjs-react-native";
 import * as jpeg from "jpeg-js";
 import * as FileSystem from "expo-file-system";
 import ImgContext from "../../hooks/ImgContext";
-import Loader from "../components/Loader";
+import Loader from "../components/Loader2";
 import Icon from "react-native-vector-icons/Ionicons";
 import COLORS from "../../const/colors";
 import ResultContext from "../../hooks/ResultContext";

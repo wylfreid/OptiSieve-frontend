@@ -17,6 +17,7 @@ import WelcomeScreen from "./src/views/screens/WelcomeScreen";
 import { Animated } from 'react-native';
 
 import * as Font from 'expo-font';
+import { AppLoading } from 'expo';
 
 import { Provider} from 'react-redux';
 import store from "./src/redux/store";
@@ -30,7 +31,8 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const [initialRouteName, setInitialRouteName] = useState(null);
 
-  const { currentUser } = UseAuth();
+  const [isReady, setIsReady] = useState(false);
+  
 
   const loadFonts = async () => {
     await Font.loadAsync({
@@ -38,7 +40,7 @@ export default function App() {
       'PTSans-bold': require('./assets/fonts/PT_Sans/PTSans-Bold.ttf'),
       'poppins-regular': require('./assets/fonts/Poppins/Poppins-Regular.ttf'),
     });
-    
+    setIsReady(true)
   }
 
   useEffect(()=>{
@@ -67,7 +69,7 @@ export default function App() {
         }
       } else {
         setInitialRouteName("WelcomeScreen");
-      }
+      } 
     } catch (error) {
       setInitialRouteName("WelcomeScreen");
     }
@@ -85,6 +87,12 @@ export default function App() {
     );
   
     return { transform: [{ translateX }] };
+  }
+
+  if (!isReady) {
+    return (
+      null
+    );
   }
 
 
