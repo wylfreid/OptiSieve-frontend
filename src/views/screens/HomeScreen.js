@@ -1036,7 +1036,7 @@ const handleError = (error, input) => {
               
                 <TouchableOpacity style={styles.option_button} onPress={()=>openBottomSheet(emailEditModal)}>
                   <Email />
-                  <Text style={{}}>Editer l’addresse email</Text>
+                  <Text style={{}}>Editer l’adresse email</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => [closeBottomSheet(profileEditModal), openBottomSheet(settingsModal)]} style={{marginTop: 10,width:"100%", justifyContent: "center", alignItems: "center",  height:54,backgroundColor: COLORS.black, borderRadius: 8}}>
@@ -1195,7 +1195,7 @@ const handleError = (error, input) => {
             }}
           >
             <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
-            > Edition de l’addresse mail
+            > Edition de l’adresse mail
            </Text>
 
            <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
