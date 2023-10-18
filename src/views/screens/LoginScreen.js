@@ -264,7 +264,7 @@ export default function LoginScreen({ navigation }) {
         
         <View style={{  }}>
           <Input
-            label="Email ou nom d’utilisateur"
+            label="Addresse mail"
             iconName="mail-outline"
             error={errors.email}
             onFocus={() => {
