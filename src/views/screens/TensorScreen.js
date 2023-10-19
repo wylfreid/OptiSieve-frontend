@@ -40,7 +40,7 @@ export default function TensorScreen({ navigation }) {
   const openBottomSheet = (ref) => {
     if (ref == infoModal) {
       
-      infoModal.current.open();
+      infoModal?.current?.open();
       
     }
   };
@@ -56,7 +56,10 @@ export default function TensorScreen({ navigation }) {
     }
   };
 
-  const { setResult } = useContext(ResultContext);
+  const handleCancel = () => {
+    navigation.navigate('HomeScreen');
+  };
+
 
 
   useEffect(() => {
@@ -182,7 +185,7 @@ export default function TensorScreen({ navigation }) {
 
       }else{
         openBottomSheet(infoModal)
-        console.log("insérer des images valides");
+        console.log("insérez des images valides");
       }
 
       
@@ -216,7 +219,8 @@ export default function TensorScreen({ navigation }) {
             ref={infoModal}
             height={293}
             openDuration={250}
-            closeOnDragDown={true}
+            closeOnPressMask={false}
+            closeOnDragDown={false}
             customStyles={{
               container: {
                 borderTopLeftRadius: 20,

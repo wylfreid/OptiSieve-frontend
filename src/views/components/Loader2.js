@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 
 
-export default function Loader({ visible = false, title = "Analyse en cours..." }) {
+export default function Loader({ visible = false, cancel = () =>{}, title = "Analyse en cours..." }) {
   const { width, height } = useWindowDimensions();
   return (
     visible && (
@@ -25,9 +25,10 @@ export default function Loader({ visible = false, title = "Analyse en cours..." 
           <Logo/>
           
         </View>
+        
 
         <View style={styles.middleContainer}>
-        <View style={{height: width/1.2, width: width}}>
+        <View style={{flex: 1, width: width}}>
           <LottieView
             source={require('../../../assets/images/lotties/animation.json')} // Remplacez par le chemin de votre fichier d'animation JSON
             autoPlay
@@ -43,7 +44,7 @@ export default function Loader({ visible = false, title = "Analyse en cours..." 
 
                 <View style={{marginHorizontal: 40, marginBottom: 50}}>
 
-                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.blackc }]} onPress={() => {}} activeOpacity={0.7}>
+                  <TouchableOpacity onPress={() => {cancel()}} style={[styles.button, {zIndex: 10,backgroundColor: COLORS.black, flexDirection: "row", gap: 10 }]}>
                   <Icon name={"close-circle-outline"}  style={{color:"#fff",fontSize:30}}/>
                     <Text style={styles.text}>Annuler l’analyse</Text>
                   </TouchableOpacity>
