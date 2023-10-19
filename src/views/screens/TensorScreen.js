@@ -67,9 +67,72 @@ export default function TensorScreen({ navigation }) {
       console.log("[+] Loading pre-trained images detection model");
       //Replce model.json and group1-shard.bin with your own custom model
       const modelJson = await require("../../../assets/model/model.json");
-      const modelWeights1 = await require("../../../assets/model/group1-shard1of1.bin");
+      const modelWeights1 =
+        await require("../../../assets/model/group1-shard1of21.bin");
+      const modelWeights2 =
+        await require("../../../assets/model/group1-shard2of21.bin");
+      const modelWeights3 =
+        await require("../../../assets/model/group1-shard3of21.bin");
+      const modelWeights4 =
+        await require("../../../assets/model/group1-shard4of21.bin");
+      const modelWeights5 =
+        await require("../../../assets/model/group1-shard5of21.bin");
+      const modelWeights6 =
+        await require("../../../assets/model/group1-shard6of21.bin");
+      const modelWeights7 =
+        await require("../../../assets/model/group1-shard7of21.bin");
+      const modelWeights8 =
+        await require("../../../assets/model/group1-shard8of21.bin");
+      const modelWeights9 =
+        await require("../../../assets/model/group1-shard9of21.bin");
+      const modelWeights10 =
+        await require("../../../assets/model/group1-shard10of21.bin");
+      const modelWeights11 =
+        await require("../../../assets/model/group1-shard11of21.bin");
+      const modelWeights12 =
+        await require("../../../assets/model/group1-shard12of21.bin");
+      const modelWeights13 =
+        await require("../../../assets/model/group1-shard13of21.bin");
+      const modelWeights14 =
+        await require("../../../assets/model/group1-shard14of21.bin");
+      const modelWeights15 =
+        await require("../../../assets/model/group1-shard15of21.bin");
+      const modelWeights16 =
+        await require("../../../assets/model/group1-shard16of21.bin");
+      const modelWeights17 =
+        await require("../../../assets/model/group1-shard17of21.bin");
+      const modelWeights18 =
+        await require("../../../assets/model/group1-shard18of21.bin");
+      const modelWeights19 =
+        await require("../../../assets/model/group1-shard19of21.bin");
+      const modelWeights20 =
+        await require("../../../assets/model/group1-shard20of21.bin");
+      const modelWeights21 =
+      await require("../../../assets/model/group1-shard21of21.bin");
 
-      const ioHandler = bundleResourceIO(modelJson, [modelWeights1]);
+      const ioHandler = bundleResourceIO(modelJson, [
+        modelWeights1,
+        modelWeights2,
+        modelWeights3,
+        modelWeights4,
+        modelWeights5,
+        modelWeights6,
+        modelWeights7,
+        modelWeights8,
+        modelWeights9,
+        modelWeights10,
+        modelWeights11,
+        modelWeights12,
+        modelWeights13,
+        modelWeights14,
+        modelWeights15,
+        modelWeights16,
+        modelWeights17,
+        modelWeights18,
+        modelWeights19,
+        modelWeights20,
+        modelWeights21,
+      ]);
       const GradingNetwork1 = await tf.loadGraphModel(
         ioHandler
       );
