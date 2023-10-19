@@ -442,7 +442,7 @@ const handleError = (error, input) => {
     }
   };
   const __takePicture = async () => {
-    const options = { quality: 1, width: 6048, height: 4024 };
+    const options = { quality: 1, width: 4016, height: 4016 };
 
     const photo = await camera.takePictureAsync(options);
 
@@ -511,7 +511,7 @@ const handleError = (error, input) => {
     let profileImage = await ImagePicker.launchImageLibraryAsync({
       mediaTypes:ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [1, 1],
       quality: 1,
     }); 
     if (!profileImage.canceled) {
