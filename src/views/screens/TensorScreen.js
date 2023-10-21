@@ -18,14 +18,13 @@ import COLORS from "../../const/colors";
 import ResultContext from "../../hooks/ResultContext";
 import Carousel from "../components/Carousel";
 import { useSelector } from "react-redux";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, storage } from "../../firebase.config";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRef } from "react";
 import RBSheet from "react-native-raw-bottom-sheet";
 import Close from "../../../assets/images/shapes/Close";
-
 
 
 
@@ -227,7 +226,8 @@ export default function TensorScreen({ navigation }) {
                     getDownloadURL(storageRef2).then(async (downloadURL2) => {
                       await addDoc(docRef, {
                         ...newAnalysis_infos,
-                        images: [downloadURL1, downloadURL2]
+                        images: [downloadURL1, downloadURL2],
+                        date: serverTimestamp(),
                       });
         
                   });

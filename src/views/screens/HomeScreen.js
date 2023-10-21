@@ -57,6 +57,9 @@ import { imgActions } from "../../redux/slices/imgSlice";
 
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import CardAnalysis from "../components/CardAnalysis";
+
+
 
 let camera;
 export default function HomeScreen({ navigation }) {
@@ -69,7 +72,9 @@ export default function HomeScreen({ navigation }) {
 
   
 
-  const {data: users, load} = useGetData("users")
+  const {data: users} = useGetData("users")
+
+  const {data: analysis, load} = useGetData("analysis")
 
   //console.log(users);
 
@@ -362,17 +367,6 @@ export default function HomeScreen({ navigation }) {
       
   }
 
-  
-
-
-const __DateFormatter = (dateString) =>{
-  const [day, month,  year] = dateString.split('/');
-  const date = new Date(year, month - 1, day);
-  const options = { year: 'numeric', month: 'long' };
-  const formattedDate = `Depuis ${date.toLocaleDateString('fr-FR', options)}`;
-  
-  return formattedDate
-}
 
 const handleOnChange = (text, input) => {
   setInputs((prevState) => ({
@@ -815,23 +809,42 @@ const handleError = (error, input) => {
 
             </View>
 
-          </View>
-          <View style={styles.middleContainer}> 
-            <Empty/>
+    </View>
 
-            <Text style={{fontSize: 14, lineHeight: 16,fontFamily: 'PTSans-regular', }}>
-              Aucune analyse pour l’instant
-            </Text>
+          { analysis?.length > 0 &&
+              <View style={{ width: "100%", backgroundColor: "#fff", paddingBottom: 13 }}>
+                <Text style={{ fontSize: 16, fontFamily: 'PTSans-bold', textAlign: "center" }}>
+                  {analysis?.length} Analyse{analysis?.length && "s"}
+                </Text>
+              </View>
+          }
+
+          <View style={{ elevation: 2,height: 0.3,width: "100%", backgroundColor: "#fff"}}></View>
+          
+
+          <View style={styles.middleContainer}> 
+            { analysis?.length == 0 ?
+              <><Empty /><Text style={{ fontSize: 14, lineHeight: 16, fontFamily: 'PTSans-regular', }}>
+                Aucune analyse pour l’instant
+              </Text></>
+              
+              : 
+                <ScrollView>
+                  {analysis?.map((item, index)=>(
+                    <CardAnalysis key={index} item ={item} />
+                  ))}
+                </ScrollView>
+              }
           </View>
 
           <View style={styles.bottomContainer}> 
 
-            <View style={{flex: 1,justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
+            <View style={{marginHorizontal: 30,flex: 1,justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>
                 <TouchableOpacity onPress={() =>openBottomSheet(settingsModal)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#E6E6E6", borderRadius: 8}}>
                   <Settings/>
                 </TouchableOpacity>
 
-                <View style={{width: 266 }}>
+                <View style={{flex: 1}}>
                   <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => openBottomSheet(newAnalysis)} activeOpacity={0.7}>
                     <Text style={styles.text}>Nouvelle analyse</Text>
                   </TouchableOpacity>
@@ -899,7 +912,7 @@ const handleError = (error, input) => {
               onChangeText={(text)=>handleOnChange(text,"source")}
               value={inputs.source}
             />
-            <View style={{marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+            <View style={{gap: 15,marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>closeBottomSheet(newAnalysis)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
@@ -907,7 +920,7 @@ const handleError = (error, input) => {
                 />
               </TouchableOpacity>
 
-              <View style={{width: 266 }}>
+              <View style={{flex: 1 }}>
                 <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() => handleInitAnalyse()} activeOpacity={0.7}>
                   <Text style={styles.text}>Importer les images</Text>
                 </TouchableOpacity>
@@ -1082,7 +1095,7 @@ const handleError = (error, input) => {
             />
             </View>
 
-            <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+            <View style={{gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>[closeBottomSheet(nameEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
@@ -1090,7 +1103,7 @@ const handleError = (error, input) => {
                 />
               </TouchableOpacity>
 
-              <View style={{width: 266 }}>
+              <View style={{flex: 1}}>
                 <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("displayName", inputs?.displayName)} activeOpacity={0.7}>
                   <Text style={styles.text}>Enregistrer</Text>
                 </TouchableOpacity>
@@ -1160,7 +1173,7 @@ const handleError = (error, input) => {
               onChangeText={(text)=>handleOnChange(text,"newPasswordConfirm")}
               value={inputs.newPasswordConfirm}
             />
-            <View style={{marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+            <View style={{ gap: 15,marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>[closeBottomSheet(passwordEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
@@ -1168,7 +1181,7 @@ const handleError = (error, input) => {
                 />
               </TouchableOpacity>
 
-              <View style={{width: 266 }}>
+              <View style={{flex: 1}}>
                 <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate(["oldPassword","newPassword","newPasswordConfirm"], [inputs?.oldPassword,inputs?.newPassword,inputs?.newPasswordConfirm])} activeOpacity={0.7}>
                   <Text style={styles.text}>Enregistrer</Text>
                 </TouchableOpacity>
@@ -1217,7 +1230,7 @@ const handleError = (error, input) => {
             />
             </View>
 
-            <View style={{marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+            <View style={{ gap: 15 ,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>[closeBottomSheet(emailEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                 <Icon
                   name="chevron-back-outline"
@@ -1225,7 +1238,7 @@ const handleError = (error, input) => {
                 />
               </TouchableOpacity>
 
-              <View style={{width: 266 }}>
+              <View style={{flex: 1}}>
                 <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("email", inputs?.email)} activeOpacity={0.7}>
                   <Text style={styles.text}>Enregistrer</Text>
                 </TouchableOpacity>
@@ -1317,11 +1330,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#D9D9D95E",
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 20,
+    paddingBottom: 0,
     gap: 20,
   },
   bottomContainer: {
-    /* flex: 0.2, */
+    elevation: 5,
     height: 90,
     alignItems: "center",
     justifyContent: "center",
