@@ -130,8 +130,8 @@ export default function HomeScreen({ navigation }) {
       
     }else if(ref == importModal){
 
-      newAnalysis.current.close();
       importModal.current.open();
+      newAnalysis.current.close();
 
     }else if(ref == settingsModal){
 

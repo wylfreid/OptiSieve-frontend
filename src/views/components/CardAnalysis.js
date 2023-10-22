@@ -13,7 +13,7 @@ const CardAnalysis = ({item})=>{
 return(
     <View style={[styles.card, {width: width - 50}]}>
         <View style={{flexDirection: "row", justifyContent: "space-between"}}>
-            <Text style={styles.headText}>Analyse du {item?.date && format(item?.date?.toDate(), "dd MMM yyyy", { locale: fr })}</Text>
+            <Text style={styles.headText}>Analyse du {item?.createdAt && format(item?.createdAt?.toDate(), "dd MMM yyyy", { locale: fr })}</Text>
 
             <TouchableOpacity style={{flexDirection: "row", gap: 5}}>
                 <Star height={19} width={21} />
