@@ -123,15 +123,15 @@ export default function HomeScreen({ navigation }) {
   const passwordEditModal = useRef(null);
   const emailEditModal = useRef(null);
 
-  const openBottomSheet = (ref) => {
+  const openBottomSheet = async (ref) => {
     if (ref == newAnalysis) {
       
       newAnalysis.current.open();
       
     }else if(ref == importModal){
 
-      importModal.current.open();
-      //newAnalysis.current.close();
+      await newAnalysis.current.close();
+      await importModal.current.open();
 
     }else if(ref == settingsModal){
 
@@ -143,9 +143,9 @@ export default function HomeScreen({ navigation }) {
       profileEditModal.current.open();
 
     }else if(ref == nameEditModal){
-
-      profileEditModal.current.close();
-      nameEditModal.current.open();
+      console.log(nameEditModal);
+      await profileEditModal.current.close();
+      await nameEditModal.current.open();
 
     }else if(ref == passwordEditModal){
 
