@@ -23,9 +23,6 @@ export default function LoginScreen({ navigation }) {
 
   const {data: users, load} = useGetData("users")
 
-  StatusBar.setBarStyle('dark-content');
-  StatusBar.setBackgroundColor('#fff');
-
   const {width, height} = useWindowDimensions();
 
   const [timer, setTimer] = useState(60);

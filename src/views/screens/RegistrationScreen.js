@@ -34,9 +34,6 @@ import { storage } from "./../../firebase.config";
 
 export default function RegistrationScreen({ navigation }) {
 
-  StatusBar.setBarStyle('dark-content');
-  StatusBar.setBackgroundColor('#fff');
-
   const [inputs, setInputs] = useState({
     displayName: "",
     email: "",

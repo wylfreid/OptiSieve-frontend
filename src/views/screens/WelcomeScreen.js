@@ -18,8 +18,7 @@ import OnboardingScreen_3 from "../components/OnboardingScreen_3";
 
 export default function WelcomeScreen({ navigation }) {
 
-  StatusBar.setBarStyle('dark-content');
-  StatusBar.setBackgroundColor('#fff');
+  
 
   const slickRef = useRef(null);
 
