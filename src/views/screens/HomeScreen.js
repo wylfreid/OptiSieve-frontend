@@ -126,38 +126,38 @@ export default function HomeScreen({ navigation }) {
   const openBottomSheet = async (ref) => {
     if (ref == newAnalysis) {
       
-      newAnalysis.current.open();
+      newAnalysis?.current?.open();
       
     }else if(ref == importModal){
 
-      await newAnalysis.current.close();
-      await importModal.current.open();
+      await newAnalysis?.current?.close();
+      await importModal?.current?.open();
 
     }else if(ref == settingsModal){
 
-      settingsModal.current.open();
+      settingsModal?.current?.open();
 
     }else if(ref == profileEditModal){
       console.log(profileEditModal);
-      await settingsModal.current.close();
-      await profileEditModal.current.open();
+      await settingsModal?.current?.close();
+      await profileEditModal?.current?.open();
 
     }else if(ref == nameEditModal){
       console.log(nameEditModal);
-      await profileEditModal.current.close();
-      await nameEditModal.current.open();
+      await profileEditModal?.current?.close();
+      await nameEditModal?.current?.open();
 
     }else if(ref == passwordEditModal){
 
-      profileEditModal.current.close();
-      passwordEditModal.current.open();
+      profileEditModal?.current?.close();
+      passwordEditModal?.current?.open();
 
     }
 
     else if(ref == emailEditModal){
 
-      profileEditModal.current.close();
-      emailEditModal.current.open();
+      profileEditModal?.current?.close();
+      emailEditModal?.current?.open();
 
     }
   };
@@ -167,43 +167,43 @@ export default function HomeScreen({ navigation }) {
   const closeBottomSheet = (ref) => {
     if (ref == newAnalysis) {
       
-      newAnalysis.current.close();
+      newAnalysis?.current?.close();
       
     }else if(ref == importModal){
       
-      importModal.current.close();
+      importModal?.current?.close();
 
     }else if(ref == settingsModal){
 
-      settingsModal.current.close();
+      settingsModal?.current?.close();
 
     }else if(ref == profileEditModal){
 
-      profileEditModal.current.close();
+      profileEditModal?.current?.close();
 
     }else if(ref == nameEditModal){
 
-      nameEditModal.current.close();
+      nameEditModal?.current?.close();
 
     }else if(ref == passwordEditModal){
 
-      passwordEditModal.current.close();
+      passwordEditModal?.current?.close();
 
     }else if(ref == emailEditModal){
 
-      emailEditModal.current.close();
+      emailEditModal?.current?.close();
 
     }
   };
 
   const closeAllBottomSheet = (ref) =>{
-    newAnalysis.current.close();
-    importModal.current.close();
-    settingsModal.current.close();
-    profileEditModal.current.close();
-    nameEditModal.current.close();
-    passwordEditModal.current.close();
-    emailEditModal.current.close();
+    newAnalysis?.current?.close();
+    importModal?.current?.close();
+    settingsModal?.current?.close();
+    profileEditModal?.current?.close();
+    nameEditModal?.current?.close();
+    passwordEditModal?.current?.close();
+    emailEditModal?.current?.close();
   }
 
   const validate = (field, value) => {
@@ -1063,62 +1063,67 @@ const handleError = (error, input) => {
              
               </View>
 
-          </RBSheet>
-
-          <RBSheet
-            ref={nameEditModal}
-            height={290}
-            openDuration={250}
-            closeOnDragDown={true}
-            customStyles={{
-              container: {
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20
-              }
-            }}
-          >
-            <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
-            > Edition du nom d’utilisateur
-           </Text>
-
-           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
-            > Veuillez renseigner votre nouveau nom
-           </Text>
 
 
-           <View style={{marginHorizontal: 30, marginTop: 20  }}>
-            <Input
-              label="Nom d’utilisateur"
-              iconName="person-outline"
-              error={errors.displayName}
-              onFocus={() => {
-                handleError(null,"displayName");
+
+              <RBSheet
+              ref={nameEditModal}
+              height={290}
+              openDuration={250}
+              closeOnDragDown={true}
+              customStyles={{
+                container: {
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20
+                }
               }}
-              placeholder="Ecrivez ici..."
-              onChangeText={(text)=>handleOnChange(text,"displayName")}
-              value={inputs?.displayName}
-            />
-            </View>
+            >
+              <Text style={{marginTop: 10,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+              > Edition du nom d’utilisateur
+            </Text>
 
-            <View style={{gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-              <TouchableOpacity onPress={() =>[closeBottomSheet(nameEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
-                <Icon
-                  name="chevron-back-outline"
-                  style={{ fontSize: 36, color: "#fff"}}
-                />
-              </TouchableOpacity>
+            <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
+              > Veuillez renseigner votre nouveau nom
+            </Text>
 
-              <View style={{flex: 1}}>
-                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("displayName", inputs?.displayName)} activeOpacity={0.7}>
-                  <Text style={styles.text}>Enregistrer</Text>
+
+            <View style={{marginHorizontal: 30, marginTop: 20  }}>
+              <Input
+                label="Nom d’utilisateur"
+                iconName="person-outline"
+                error={errors.displayName}
+                onFocus={() => {
+                  handleError(null,"displayName");
+                }}
+                placeholder="Ecrivez ici..."
+                onChangeText={(text)=>handleOnChange(text,"displayName")}
+                value={inputs?.displayName}
+              />
+              </View>
+
+              <View style={{gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+                <TouchableOpacity onPress={() =>[closeBottomSheet(nameEditModal), openBottomSheet(profileEditModal)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                  <Icon
+                    name="chevron-back-outline"
+                    style={{ fontSize: 36, color: "#fff"}}
+                  />
                 </TouchableOpacity>
+
+                <View style={{flex: 1}}>
+                  <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>validate("displayName", inputs?.displayName)} activeOpacity={0.7}>
+                    <Text style={styles.text}>Enregistrer</Text>
+                  </TouchableOpacity>
+                
+                </View>
+
               
               </View>
 
-            
-            </View>
+            </RBSheet>
 
           </RBSheet>
+
+          
 
 
           <RBSheet
