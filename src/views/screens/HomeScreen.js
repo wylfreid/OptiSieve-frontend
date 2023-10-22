@@ -138,9 +138,9 @@ export default function HomeScreen({ navigation }) {
       settingsModal.current.open();
 
     }else if(ref == profileEditModal){
-
-      settingsModal.current.close();
-      profileEditModal.current.open();
+      console.log(profileEditModal);
+      await settingsModal.current.close();
+      await profileEditModal.current.open();
 
     }else if(ref == nameEditModal){
       console.log(nameEditModal);
