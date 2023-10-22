@@ -419,6 +419,8 @@ const handleError = (error, input) => {
       },
     ],
   };
+  
+  
 
   const __startCamera = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -439,6 +441,8 @@ const handleError = (error, input) => {
     const options = { quality: 1, width: 4016, height: 4016 };
 
     const photo = await camera.takePictureAsync(options);
+
+    console.log(await camera?.getSupportedRatiosAsync());
 
     let temponPicture = capturedImage;
 
@@ -661,6 +665,7 @@ const handleError = (error, input) => {
                 </View>
               </View>
               <Camera
+                ratio="1:1"
                 type={cameraType}
                 flashMode={flashMode}
                 style={{ width: width, height: width }}
@@ -1320,13 +1325,13 @@ const styles = StyleSheet.create({
     marginTop: Constants.statusBarHeight,
   },
   topContainer: {
-    flex: 0.25,
+    flex: 0.22,
     alignItems: "center",
     justifyContent: "center",
     /* backgroundColor: COLORS.purple, */
   },
   middleContainer: {
-    flex: 0.75,
+    flex: 0.78,
     backgroundColor: "#D9D9D95E",
     justifyContent: "center",
     alignItems: "center",

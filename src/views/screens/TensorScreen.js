@@ -34,6 +34,8 @@ export default function TensorScreen({ navigation }) {
 
   const images = useSelector((state) => state.images);
 
+  const user = useSelector((state) => state.user);
+
   const infoModal = useRef(null);
 
   const openBottomSheet = (ref) => {
@@ -225,6 +227,7 @@ export default function TensorScreen({ navigation }) {
                   () => {
                     getDownloadURL(storageRef2).then(async (downloadURL2) => {
                       await addDoc(docRef, {
+                        user_id: user?.uid,
                         ...newAnalysis_infos,
                         images: [downloadURL1, downloadURL2],
                         date: serverTimestamp(),
