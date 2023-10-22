@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, StatusBar } from "react-native";
 import "react-native-gesture-handler";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./src/views/screens/HomeScreen";
@@ -29,6 +29,10 @@ import UseAuth from "./src/custom-hooks/useAuth";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  StatusBar.setBarStyle('dark-content');
+  StatusBar.setBackgroundColor('#fff');
+
   const [initialRouteName, setInitialRouteName] = useState(null);
 
   const [isReady, setIsReady] = useState(false);
