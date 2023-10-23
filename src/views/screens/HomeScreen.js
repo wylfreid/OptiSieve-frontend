@@ -58,7 +58,8 @@ import { imgActions } from "../../redux/slices/imgSlice";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import CardAnalysis from "../components/CardAnalysis";
-
+import TextArea from "../components/TextArea";
+import { Entypo  } from '@expo/vector-icons';
 
 
 let camera;
@@ -74,9 +75,66 @@ export default function HomeScreen({ navigation }) {
 
   const {data: users} = useGetData("users")
 
-  const {data: analysis, load} = useGetData("analysis")
+  const {data: analysisData, load} = useGetData("analysis")
 
-  //console.log(users);
+  const [analysis, setAnalysis] = useState([]);
+
+  const [analysisToRate, setAnalysisToRate] = useState(null);
+
+  const handleOpenRate = (item) => {
+    setAnalysisToRate(item)
+    setRating(item?.rating || 0)
+    handleOnChange(item?.comment || "","comment")
+    openBottomSheet(rateModal)
+  };
+
+
+
+  const handleRate = async () => {
+
+    if (rating > 0) {
+      
+      try {
+        await updateDoc(doc(db, "analysis", analysisToRate?.id), {
+          rating: rating,
+          comment: inputs?.comment
+        });
+  
+        closeBottomSheet(rateModal)
+        
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    
+    
+  };
+
+  useEffect(()=>{
+
+    if(analysisData?.length > 0 && user?.uid){
+      let result = analysisData.filter(
+      (item) => item.user_id === user.uid
+    );
+
+    result.sort((a, b) => {
+      if (!a.createdAt === 0 && !b.createdAt) {
+        return 0;
+      } else if (!a.createdAt) {
+        return 1;
+      } else if (!b.createdAt) {
+        return -1;
+      } else {
+        const aDate = new Date(a.createdAt.toDate())
+        const bDate = new Date(b.createdAt.toDate())
+        
+        return  bDate - aDate;
+      }
+    });
+
+    setAnalysis(result)}
+
+  },[analysisData, user])
 
   useEffect(()=>{
 
@@ -111,6 +169,8 @@ export default function HomeScreen({ navigation }) {
     oldPassword: "",
     newPassword: "",
     newPasswordConfirm: "",
+
+    comment: ""
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -122,6 +182,8 @@ export default function HomeScreen({ navigation }) {
   const nameEditModal = useRef(null);
   const passwordEditModal = useRef(null);
   const emailEditModal = useRef(null);
+
+  const rateModal = useRef(null);
 
   const openBottomSheet = (ref) => {
     if (ref == newAnalysis) {
@@ -152,12 +214,14 @@ export default function HomeScreen({ navigation }) {
       profileEditModal.current.close();
       passwordEditModal.current.open();
 
-    }
-
-    else if(ref == emailEditModal){
+    }else if(ref == emailEditModal){
 
       profileEditModal.current.close();
       emailEditModal.current.open();
+
+    }else if(ref == rateModal){
+
+      rateModal.current.open();
 
     }
   };
@@ -192,6 +256,10 @@ export default function HomeScreen({ navigation }) {
     }else if(ref == emailEditModal){
 
       emailEditModal.current.close();
+
+    }else if(ref == rateModal){
+
+      rateModal.current.close();
 
     }
   };
@@ -601,6 +669,29 @@ const handleError = (error, input) => {
 
   };
 
+  
+  const [rating, setRating] = useState(0); 
+
+  const renderStars = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <TouchableOpacity
+          key={i}
+          onPress={() => setRating(i)}
+          style={styles.starContainer}
+        >
+          <Entypo 
+            name={'star'}
+            size={46}
+            color={i <= rating ? 'gold' : '#C5C5C5'}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return stars;
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -819,7 +910,7 @@ const handleError = (error, input) => {
           { analysis?.length > 0 &&
               <View style={{ width: "100%", backgroundColor: "#fff", paddingBottom: 13 }}>
                 <Text style={{ fontSize: 16, fontFamily: 'PTSans-bold', textAlign: "center" }}>
-                  {analysis?.length} Analyse{analysis?.length && "s"}
+                  {analysis?.length} Analyse{analysis?.length > 1 && "s"}
                 </Text>
               </View>
           }
@@ -836,7 +927,7 @@ const handleError = (error, input) => {
               : 
                 <ScrollView>
                   {analysis?.map((item, index)=>(
-                    <CardAnalysis key={index} item ={item} />
+                    <CardAnalysis key={index} item ={{...item}} handleOpenRate={()=> handleOpenRate(item)} />
                   ))}
                 </ScrollView>
               }
@@ -1254,6 +1345,66 @@ const handleError = (error, input) => {
             </View>
 
           </RBSheet>
+
+
+          <RBSheet
+            ref={rateModal}
+            height={351}
+            openDuration={250}
+            closeOnDragDown={true}
+            customStyles={{
+              container: {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20
+              }
+            }}
+          >
+            <Text style={{marginTop: 5,fontSize: 16, alignSelf: "center", fontFamily: 'PTSans-regular', fontWeight: 700}} 
+            > Ajouter une notation
+           </Text>
+
+           <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
+            > lorem ipsum lorem ipsum lorem ispum
+           </Text>
+
+           <View style={styles.starRow}>{renderStars()}</View>
+
+
+           <View style={{marginHorizontal: 30,marginTop: 5,  }}>
+            <TextArea
+              label="Commentaire"
+              error={errors.comment}
+              onFocus={() => {
+                handleError(null,"comment");
+              }}
+              placeholder="Ecrivez ici..."
+              onChangeText={(text)=>handleOnChange(text,"comment")}
+              value={inputs?.comment}
+              rlabel = {"facultatif"}
+              multiline={true}
+              numberOfLines={3} 
+            />
+            </View>
+
+            <View style={{gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+              <TouchableOpacity onPress={() => closeBottomSheet(rateModal)} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                <Icon
+                  name="chevron-back-outline"
+                  style={{ fontSize: 36, color: "#fff"}}
+                />
+              </TouchableOpacity>
+
+              <View style={{flex: 1}}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>handleRate()} activeOpacity={0.7}>
+                  <Text style={styles.text}>Enregistrer</Text>
+                </TouchableOpacity>
+              
+              </View>
+
+            
+            </View>
+
+          </RBSheet>
         </>
       )}
     </SafeAreaView>
@@ -1261,6 +1412,14 @@ const handleError = (error, input) => {
 }
 
 const styles = StyleSheet.create({
+
+  starRow: {
+    flexDirection: 'row',
+    justifyContent: "center"
+  },
+  starContainer: {
+    padding: 5,
+  },
 
   profilePic:{
     width: 80,

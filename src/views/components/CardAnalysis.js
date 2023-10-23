@@ -6,18 +6,42 @@ import Results from "../../../assets/images/shapes/Results";
 
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useState } from "react";
+import { Entypo  } from '@expo/vector-icons';
 
-const CardAnalysis = ({item})=>{
+const CardAnalysis = ({item, handleOpenRate = ()=>{}})=>{
 
     const {width, height} = useWindowDimensions()
+
+
+    const renderStars = () => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+        stars.push(
+            <View
+            key={i}
+            style={styles.starContainer}
+            >
+            <Entypo 
+                name={'star'}
+                size={16}
+                color={i <= item?.rating ? 'gold' : '#C5C5C5'}
+            />
+            </View>
+        );
+        }
+        return stars;
+    };
+
+
 return(
     <View style={[styles.card, {width: width - 50}]}>
         <View style={{flexDirection: "row", justifyContent: "space-between"}}>
             <Text style={styles.headText}>Analyse du {item?.createdAt && format(item?.createdAt?.toDate(), "dd MMM yyyy", { locale: fr })}</Text>
 
-            <TouchableOpacity style={{flexDirection: "row", gap: 5}}>
+            <TouchableOpacity style={{flexDirection: "row", gap: 5}} onPress={() => handleOpenRate()}>
                 <Star height={19} width={21} />
-                <Text style={[styles.headText, {color: COLORS.purple, fontFamily: 'PTSans-bold', fontSize: 15} ]}>Editer la notation</Text>
+                <Text style={[styles.headText, {color: COLORS.purple, fontFamily: 'PTSans-bold', fontSize: 15} ]}>{item?.rating && item?.rating > 0 ? "Editer la notation" : "Noter"}</Text>
             </TouchableOpacity>
         </View>
 
@@ -34,13 +58,7 @@ return(
              
         </TouchableOpacity>
 
-        <View style={{flexDirection: "row", marginTop: 15}}>
-            {
-                new Array(5).fill().map((item, index)=>(
-                    <Star height={13} width={14} key={index} />
-                ))
-            }
-        </View>
+        <View style={styles.starRow}>{renderStars()}</View>
 
         <View style={{marginTop: 5}}>
             <Text style={styles.headText}>Lorem lorem lorem lorem lorem lorem lorem ipsum Lorem lorem lorem lorem lorem lorem lorem ipsum ipsum</Text>
@@ -49,6 +67,13 @@ return(
 )
 }
 const styles = StyleSheet.create({
+    starRow: {
+        flexDirection: 'row',
+        marginTop: 10
+      },
+      starContainer: {
+        padding: 2,
+      },    
     card: {
       elevation: 2,
       padding: 20,
