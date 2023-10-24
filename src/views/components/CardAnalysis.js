@@ -8,11 +8,14 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { Entypo  } from '@expo/vector-icons';
+import { useDispatch } from "react-redux";
+import { resultActions } from "../../redux/slices/resultSlice";
 
-const CardAnalysis = ({item, handleOpenRate = ()=>{}})=>{
+
+const CardAnalysis = ({navigation, item, handleOpenRate = ()=>{}})=>{
 
     const {width, height} = useWindowDimensions()
-
+    const dispatch = useDispatch();
 
     const renderStars = () => {
         const stars = [];
@@ -33,6 +36,11 @@ const CardAnalysis = ({item, handleOpenRate = ()=>{}})=>{
         return stars;
     };
 
+    const handleViewResult = (result) => {
+        dispatch(resultActions.setResult([item?.sample_name,result]))
+        navigation.navigate('ResultScreen');
+    };
+
 
 return(
     <View style={[styles.card, {width: width - 50}]}>
@@ -50,7 +58,7 @@ return(
             <Image style={styles.image} source={{uri: item?.images[1]}} />
         </View>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={() => handleViewResult(item?.result)}>
            
                 <Results />
 

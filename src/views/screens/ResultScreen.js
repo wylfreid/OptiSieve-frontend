@@ -1,8 +1,17 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View,Text, StyleSheet, TouchableWithoutFeedback, Alert, useWindowDimensions } from 'react-native';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View,Text, StyleSheet, TouchableWithoutFeedback, Alert, useWindowDimensions, TouchableOpacity } from 'react-native';
 import Svg, { Path, Text as SvgText, Line, Circle } from 'react-native-svg';
 import * as d3 from 'd3';
-import ResultContext from "../../hooks/ResultContext";
+import { useSelector } from 'react-redux';
+import Logo from '../../../assets/images/Logo';
+import Pdf from '../../../assets/images/shapes/Pdf';
+import COLORS from '../../const/colors';
+import Home from '../../../assets/images/shapes/Home';
+
+import ViewShot from "react-native-view-shot";
+import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
+
 
 const data = [
    0.08 ,
@@ -14,9 +23,11 @@ const data = [
    5,
 ];
 
-const ResultScreen = () => {
+const ResultScreen = ({navigation}) => {
 
-  const { result } = useContext(ResultContext);
+  const result = useSelector((state) => state.result.result);
+
+  const sample_name = useSelector((state) => state.result.sample_name);
 
   const [dataArray, setDataArray] = useState([]);
 
@@ -62,48 +73,143 @@ const ResultScreen = () => {
     }
     setDataArray(temp)
   },[result])
+
+  
+
+  const viewRef = useRef();
+
+  // Fonction pour capturer la vue et enregistrer le fichier PDF
+const captureViewAsPDF = async () => {
+  try {
+    // Capture la vue en utilisant react-native-view-shot
+    const uri = await ViewShot.captureRef(viewRef, {
+      format: "jpg", // Format d'image pour la capture
+      quality: 1, // Qualité de l'image (0 à 1)
+      result: "tmpfile", // Résultat sous forme de fichier temporaire
+    });
+
+    // Vérifie la plateforme pour déterminer le chemin de sauvegarde
+    const folderPath =
+      Platform.OS === "ios"
+        ? FileSystem.documentDirectory
+        : FileSystem.cacheDirectory;
+
+    // Génère un nom de fichier unique
+    const fileName = `${sample_name}_${Date.now()}.pdf`;
+
+    // Convertit l'image capturée en PDF en utilisant FileSystem
+    const pdfUri = `${folderPath}${fileName}`;
+    await FileSystem.moveAsync({
+      from: uri,
+      to: pdfUri,
+    });
+
+    // Affiche le chemin du fichier PDF
+    console.log("Chemin du fichier PDF :", pdfUri);
+  } catch (error) {
+    console.log("Erreur lors de la capture et de l'enregistrement du PDF :", error);
+  }
+};
+
+
   
   return (
     <View style={styles.container}>
-      <Svg style={styles.svg} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom} transform={"translate(0, 25)"}>
-        <Path d={monotoneCurve(dataArray)} fill="none" stroke="#FFA500" strokeWidth="2" />
-        <Line x1={margin.left} y1={height} x2={width + margin.left + margin.right} y2={height} stroke="#fff" strokeWidth="1" />
-        {axisLabelsX.map((x) => (
-          <React.Fragment key={x}>
-            <SvgText x={xScale(x)} y={height + margin.bottom - 5} fill="#50C2C9" fontSize="12" textAnchor="middle">
-              {x}
-            </SvgText>
-            <Line x1={xScale(x)} y1={-height} x2={xScale(x)} y2={yScale(0)} stroke="#fff" strokeWidth="1" />
-            {yScale(0) !== height && (
-              <Line x1={xScale(x)} y1={yScale(0)} x2={xScale(x)} y2={margin.top} stroke="#fff" strokeWidth="1" />
-            )}
-          </React.Fragment>
-        ))}
-        
-        {axisLabelsY.map((y) => (
-          <React.Fragment key={y}>
-            <SvgText x="35" y={yScale(y)} fill="#50C2C9" fontSize="12" textAnchor="end">
-              {y}
-            </SvgText>
-            <Line x1={margin.left} y1={yScale(y)} x2={width + margin.left + margin.right} y2={yScale(y)} stroke="#fff" strokeWidth="1" />
-            {y === axisLabelsY[axisLabelsY.length - 1] && (
-              <Line x1={margin.left} y1={yScale(y)} x2={margin.left} y2={margin.top} stroke="#fff" strokeWidth="1" />
-            )}
-          </React.Fragment>
-        ))}
-        <Line x1={margin.left} y1={yScale(0)} x2={margin.left+ width + margin.right} y2={yScale(0)} stroke="#fff" strokeWidth="1" />
-        {dataArray.map((d, i) => (
-          <TouchableWithoutFeedback key={i} onPress={() => handlePointPress(d)}>
-            <Circle cx={xScale(d.x)} cy={yScale(d.y)} r="6" fill="#50C2C9" />
-          </TouchableWithoutFeedback>
-        ))}
-      </Svg>
-
-      <View style={{marginTop:30, alignSelf: "flex-start", justifyContent: 'center', flexDirection: "row"}}>
-        <Text style={{ marginLeft:10, fontSize: 13, fontStyle: 'italic'}}> Percentage of bricks in the sample : </Text> 
-        <Text style={{color: '#2E7A80', fontWeight: "bold", fontStyle: 'italic'}}>{Math.round(result[7]*100)}%</Text>
+      <View style={styles.topContainer}>
+        <Logo/>
+          
       </View>
 
+
+      <View ref={viewRef} 
+      
+      style={{flex: 0.8, backgroundColor: '#F4F4F4',}}>
+          <View style={styles.bottomContainer}>
+          
+          <View style={styles.header}>
+            <Text style={{fontSize: 18, fontFamily: "PTSans-bold"}}> Resultat d’analyse </Text> 
+          </View>
+
+          <Svg style={styles.svg} width={width + margin.left + margin.right} height={height + margin.top + margin.bottom} transform={"translate(0, 25)"}>
+              <Text style={{marginTop: -20,fontSize: 12, fontFamily: "PTSans-regular", alignSelf: "center"}}> {sample_name} </Text> 
+            
+            <Path d={monotoneCurve(dataArray)} fill="none" stroke="#0072F7" strokeWidth="2" />
+
+            
+            <Line x1={margin.left} y1={-24} x2={width + margin.left + margin.right} y2={-24} stroke="#666666" strokeWidth="1" />
+
+            <Line x1={width + 59} y1={-height} x2={width + 59} y2={yScale(0)} stroke="#666666" strokeWidth="1" />
+
+
+            <Line x1={margin.left} y1={height} x2={width + margin.left + margin.right} y2={height} stroke="#666666" strokeWidth="1" />
+            {axisLabelsX.map((x) => (
+              <React.Fragment key={x}>
+                <SvgText x={xScale(x)} y={height + margin.bottom - 20} fill="#000" fontSize="12" textAnchor="middle">
+                  {x}
+                </SvgText>
+                <Line x1={xScale(x)} y1={-height} x2={xScale(x)} y2={yScale(0)} stroke="#666666" strokeWidth="1" />
+                {yScale(0) !== height && (
+                  <Line x1={xScale(x)} y1={yScale(0)} x2={xScale(x)} y2={margin.top} stroke="#666666" strokeWidth="1" />
+                )}
+              </React.Fragment>
+            ))}
+            
+            {axisLabelsY.map((y) => (
+              <React.Fragment key={y}>
+                <SvgText x="35" y={yScale(y)} fill="#000" fontSize="12" textAnchor="end">
+                  {y}
+                </SvgText>
+                <Line x1={margin.left} y1={yScale(y)} x2={width + margin.left + margin.right} y2={yScale(y)} stroke="#666666" strokeWidth="1" />
+                {y === axisLabelsY[axisLabelsY.length - 1] && (
+                  <Line x1={margin.left} y1={yScale(y)} x2={margin.left} y2={margin.top} stroke="#666666" strokeWidth="1" />
+                )}
+              </React.Fragment>
+            ))}
+            <Line x1={margin.left} y1={yScale(0)} x2={margin.left+ width + margin.right} y2={yScale(0)} stroke="#666666" strokeWidth="1" />
+            {dataArray.map((d, i) => (
+              <TouchableWithoutFeedback key={i} onPress={() => handlePointPress(d)}>
+                <Circle cx={xScale(d.x)} cy={yScale(d.y)} r="6" fill="#0072F7" />
+              </TouchableWithoutFeedback>
+            ))}
+          </Svg>
+
+          <View style={{marginTop:20,backgroundColor: '#F4F4F4', width: "100%", borderRadius: 8,paddingVertical: 20,justifyContent: 'center', flexDirection: "row"}}>
+            <View style={{}}>
+              <Text style={{fontSize: 18, fontFamily: "PTSans-regular"}}> Constituants de l’échantillon </Text> 
+              <View style={{marginTop: 10,justifyContent: 'center', flexDirection: "row", gap: 10}}>
+                {["Sable", "Gravier", "Argile"].map((item, index)=>(
+                  <View key={index} style={styles.material}>
+                    <Text style={{fontSize: 12, fontFamily: "PTSans-regular", color: "#666666"}}> {item} </Text>
+                    
+                  </View>
+                )) 
+                }
+              </View>
+            </View>
+          </View>
+
+
+            <TouchableOpacity onPress={captureViewAsPDF} style={{backgroundColor: '#F4F4F4', width: "100%", borderRadius: 8,paddingVertical: 20,marginTop: 10,justifyContent: 'center',alignItems: "center", flexDirection: "row", gap: 10}}>
+                <Pdf />
+                <Text style={{fontSize: 14, fontFamily: "PTSans-regular"}}> Telecharger les resultats en PDF </Text>
+            </TouchableOpacity>
+
+        </View>
+      </View>
+      <View style={{backgroundColor: '#fff',height: 80,gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+              <TouchableOpacity onPress={() =>navigation.navigate('HomeScreen')} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#F4F4F4", borderRadius: 8}}>
+                <Home />
+              </TouchableOpacity>
+
+              <View style={{flex: 1}}>
+                <TouchableOpacity style={[styles.button, {backgroundColor: COLORS.purple}]} onPress={() =>{}} activeOpacity={0.7}>
+                  <Text style={styles.text}>Nouvelle analyse</Text>
+                </TouchableOpacity>
+              
+              </View>
+
+            
+            </View>
     </View>
   );
 };
@@ -111,15 +217,54 @@ const ResultScreen = () => {
 const styles = StyleSheet.create({
   container: {
   flex: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#FFFFFF',
+  backgroundColor: "#fff",
   },
   svg: {
-  backgroundColor: '#021327',
-  transform: [{translateY: 25}],
+  backgroundColor: '#fff',
+  transform: [{translateX: -10}, {translateY: 30}],
+  
   },
+  topContainer: {
+    backgroundColor: '#F4F4F4',
+    flex: 0.20,
+    alignItems: "center",
+    justifyContent: "center",
+    /* backgroundColor: COLORS.purple, */
+  },
+
+  bottomContainer: {
+    padding: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    flex: 1,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30
+
+  },
+  header:{
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  material:{
+    padding: 10,
+    backgroundColor: "rgba(217, 217, 217, 0.32)",
+    borderRadius: 4
+  },
+  button: {
+    height:55,
+    width:"100%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius:8,
+  },
+  text:{
+    fontSize:16,
+    fontFamily: 'PTSans-regular', 
+    color:COLORS.white
+  },
+  
   });
+  
   
   export default ResultScreen;
   

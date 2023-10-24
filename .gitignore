@@ -12,6 +12,7 @@ web-build/
 
 assets/model
 assets/classification_model
+assets/regression_model
 
 # macOS
 .DS_Store

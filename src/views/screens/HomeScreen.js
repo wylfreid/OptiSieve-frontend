@@ -927,7 +927,7 @@ const handleError = (error, input) => {
               : 
                 <ScrollView>
                   {analysis?.map((item, index)=>(
-                    <CardAnalysis key={index} item ={{...item}} handleOpenRate={()=> handleOpenRate(item)} />
+                    <CardAnalysis key={index} item ={{...item}} handleOpenRate={()=> handleOpenRate(item)} navigation={navigation} />
                   ))}
                 </ScrollView>
               }
