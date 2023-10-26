@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { View,Text, StyleSheet, TouchableWithoutFeedback, Alert, useWindowDimensions, TouchableOpacity } from 'react-native';
+import { View,Text, StyleSheet, TouchableWithoutFeedback, Alert, useWindowDimensions, TouchableOpacity, ScrollView } from 'react-native';
 import Svg, { Path, Text as SvgText, Line, Circle } from 'react-native-svg';
 import * as d3 from 'd3';
 import { useSelector } from 'react-redux';
@@ -26,8 +26,6 @@ const data = [
    20,
    31.5
 ];
-
-const res = [0, 0, 0.009026498533785343, 0.021147500723600388, 0.03020553942769766, 0.04224127437919378, 0.053223625756800175, 0.22656452748924494, 0.42716018948704004, 0.6183350691571832, 0.8064886340871453, 0.9873665729537606, undefined]
 
 const ResultScreen = ({navigation}) => {
 
@@ -127,7 +125,7 @@ const captureViewAsPDF = async () => {
       </View>
 
 
-      <View ref={viewRef} 
+      <ScrollView ref={viewRef} 
       
       style={{flex: 0.8, backgroundColor: '#F4F4F4',}}>
           <View style={styles.bottomContainer}>
@@ -201,8 +199,10 @@ const captureViewAsPDF = async () => {
             </TouchableOpacity>
 
         </View>
-      </View>
-      <View style={{backgroundColor: '#fff',height: 80,gap: 15,marginHorizontal: 30, marginTop: 20, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
+      </ScrollView>
+
+
+      <View style={{backgroundColor: '#fff',height: 70,elevation: 5,gap: 15,paddingHorizontal: 30,paddingTop: 5, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
               <TouchableOpacity onPress={() =>navigation.navigate('HomeScreen')} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: "#F4F4F4", borderRadius: 8}}>
                 <Home />
               </TouchableOpacity>
@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
   },
 
   bottomContainer: {
+    elevation: 5,
     padding: 20,
     backgroundColor: '#fff',
     alignItems: 'center',
