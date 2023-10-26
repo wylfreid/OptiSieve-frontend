@@ -293,16 +293,16 @@ const appliedNetwork2 = async (GradingNetwork, imageTensorTop, imageTensorDown) 
 
     let result = await GradingNetwork.predict([imageTensorTop,imageTensorDown]).dataSync()
     console.log("[+] result : " + result)
-    let granulometrie = [0,0,...result];
-    let accumuledResult = [0,0,0,0,0,0,0,0]
-    for(i=0;i<7;i++){
+    let granulometrie = [0,...result];
+    let accumuledResult = [0,0,0,0,0,0,0,0,0,0,0,0]
+    for(i=0;i<12;i++){
       if(i==0){
-        accumuledResult[6-i] = 1-granulometrie[6-i];
+        accumuledResult[11-i] = 1-granulometrie[11-i];
       }else{
-        accumuledResult[6-i] = Math.max(accumuledResult[7-i]-granulometrie[6-i],0)
+        accumuledResult[11-i] = Math.max(accumuledResult[12-i]-granulometrie[11-i],0)
       }
     }
-        accumuledResult[7] = granulometrie[7]
+        accumuledResult[12] = granulometrie[12]
       console.log(accumuledResult);
 
       console.log("_______Successfully predicted particle size curve");
