@@ -244,8 +244,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     flex: 1,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30
 
   },
   header:{
