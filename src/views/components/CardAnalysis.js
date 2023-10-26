@@ -54,8 +54,8 @@ return(
         </View>
 
         <View style={{flexDirection: "row", justifyContent: "space-between", marginTop: 15}}>
-            <Image style={styles.image} source={{uri: item?.images[0]}} />
-            <Image style={styles.image} source={{uri: item?.images[1]}} />
+            <Image width={width / 2.8} height={width / 2.8} style={styles.image} source={{uri: item?.images[0]}} />
+            <Image width={width / 2.8} height={width / 2.8} style={styles.image} source={{uri: item?.images[1]}} />
         </View>
 
         <TouchableOpacity style={styles.button} onPress={() => handleViewResult(item?.result)}>
@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
         fontFamily: 'PTSans-regular', 
     },
     image:{
-        width: 141,
-        height: 141,
+        /* width: 141,
+        height: 141, */
         borderRadius: 8
     }
   });
