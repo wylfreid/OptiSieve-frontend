@@ -302,7 +302,6 @@ const appliedNetwork2 = async (GradingNetwork, imageTensorTop, imageTensorDown) 
         accumuledResult[11-i] = Math.max(accumuledResult[12-i]-granulometrie[11-i],0)
       }
     }
-        accumuledResult[12] = granulometrie[12]
       console.log(accumuledResult);
 
       console.log("_______Successfully predicted particle size curve");
