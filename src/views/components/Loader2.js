@@ -42,7 +42,7 @@ export default function Loader({ visible = false, cancel = () =>{}, title = "Ana
         <View style={styles.bottomContainer}>
   
 
-                <View style={{marginHorizontal: 40, marginBottom: 50}}>
+                <View style={{marginHorizontal: 40, marginBottom: 30}}>
 
                   <TouchableOpacity onPress={() => {cancel()}} style={[styles.button, {zIndex: 10,backgroundColor: COLORS.black, flexDirection: "row", gap: 10 }]}>
                   <Icon name={"close-circle-outline"}  style={{color:"#fff",fontSize:30}}/>
