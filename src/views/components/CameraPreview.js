@@ -11,7 +11,7 @@ import Carousel from "./Carousel";
 import Check from "../../../assets/images/shapes/Check";
 
 
-const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>{}, setImage = ()=>{}, setStartCamera = ()=>{}, setImageNumber=()=>{},setPreviewVisible = ()=>{} }) => {
+const CameraPreview = ({ photo, savePhoto, retakePicture= ()=>{}}) => {
 
 
 
@@ -38,7 +38,7 @@ const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>
                 <Text style={{fontSize: 12}}>image de dessus</Text>
               </View>
 
-              <Image source={{ uri: photo[0]?.uri }} style={styles.image}/>
+              <Image source={{ uri: photo[0]?.uri}} style={styles.image}/>
 
            </View>
 
@@ -49,14 +49,14 @@ const CameraPreview = ({ photo, retakePicture, savePhoto, setCapturedImage= ()=>
                 <Text style={{fontSize: 12}}>image de dessous</Text>
               </View>
 
-              <Image source={{ uri: photo[1]?.uri }} style={styles.image}/>
+              <Image source={{ uri: photo[1]?.uri}} style={styles.image}/>
 
            </View>
                 
            <View style={{height: 89,backgroundColor: "#fff"}}>
             
               <View style={{backgroundColor: "#fff",marginHorizontal: 30, height: 89, marginBottom: -5, justifyContent: "space-between", alignItems: "center", flexDirection:"row"}}>
-                  <TouchableOpacity onPress={()=>[setCapturedImage([]), setImage([]), setStartCamera(false), setImageNumber("Top image"),setPreviewVisible(false)]} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
+                  <TouchableOpacity onPress={()=>{retakePicture()}} style={{justifyContent: "center", alignItems: "center",  height:55, width: 54 ,backgroundColor: COLORS.black, borderRadius: 8}}>
                     <Icon
                       name="chevron-back-outline"
                       style={{ fontSize: 36, color: "#fff"}}

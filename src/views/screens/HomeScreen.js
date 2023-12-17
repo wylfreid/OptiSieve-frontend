@@ -61,6 +61,8 @@ import CardAnalysis from "../components/CardAnalysis";
 import TextArea from "../components/TextArea";
 import { Entypo  } from '@expo/vector-icons';
 
+import { ExpoImageManipulator } from 'react-native-expo-image-cropper'
+
 
 let camera;
 export default function HomeScreen({ navigation }) {
@@ -188,40 +190,40 @@ export default function HomeScreen({ navigation }) {
   const openBottomSheet = (ref) => {
     if (ref == newAnalysis) {
       
-      newAnalysis.current.open();
+      newAnalysis.current?.open();
       
     }else if(ref == importModal){
 
-      importModal.current.open();
-      newAnalysis.current.close();
+      importModal.current?.open();
+      newAnalysis.current?.close();
 
     }else if(ref == settingsModal){
 
-      settingsModal.current.open();
+      settingsModal.current?.open();
 
     }else if(ref == profileEditModal){
 
-      settingsModal.current.close();
-      profileEditModal.current.open();
+      settingsModal.current?.close();
+      profileEditModal.current?.open();
 
     }else if(ref == nameEditModal){
 
-      profileEditModal.current.close();
-      nameEditModal.current.open();
+      profileEditModal.current?.close();
+      nameEditModal.current?.open();
 
     }else if(ref == passwordEditModal){
 
-      profileEditModal.current.close();
-      passwordEditModal.current.open();
+      profileEditModal.current?.close();
+      passwordEditModal.current?.open();
 
     }else if(ref == emailEditModal){
 
-      profileEditModal.current.close();
-      emailEditModal.current.open();
+      profileEditModal.current?.close();
+      emailEditModal.current?.open();
 
     }else if(ref == rateModal){
 
-      rateModal.current.open();
+      rateModal.current?.open();
 
     }
   };
@@ -231,47 +233,47 @@ export default function HomeScreen({ navigation }) {
   const closeBottomSheet = (ref) => {
     if (ref == newAnalysis) {
       
-      newAnalysis.current.close();
+      newAnalysis.current?.close();
       
     }else if(ref == importModal){
       
-      importModal.current.close();
+      importModal.current?.close();
 
     }else if(ref == settingsModal){
 
-      settingsModal.current.close();
+      settingsModal.current?.close();
 
     }else if(ref == profileEditModal){
 
-      profileEditModal.current.close();
+      profileEditModal.current?.close();
 
     }else if(ref == nameEditModal){
 
-      nameEditModal.current.close();
+      nameEditModal.current?.close();
 
     }else if(ref == passwordEditModal){
 
-      passwordEditModal.current.close();
+      passwordEditModal.current?.close();
 
     }else if(ref == emailEditModal){
 
-      emailEditModal.current.close();
+      emailEditModal.current?.close();
 
     }else if(ref == rateModal){
 
-      rateModal.current.close();
+      rateModal.current?.close();
 
     }
   };
 
   const closeAllBottomSheet = (ref) =>{
-    newAnalysis.current.close();
-    importModal.current.close();
-    settingsModal.current.close();
-    profileEditModal.current.close();
-    nameEditModal.current.close();
-    passwordEditModal.current.close();
-    emailEditModal.current.close();
+    newAnalysis.current?.close();
+    importModal.current?.close();
+    settingsModal.current?.close();
+    profileEditModal.current?.close();
+    nameEditModal.current?.close();
+    passwordEditModal.current?.close();
+    emailEditModal.current?.close();
   }
 
   const validate = (field, value) => {
@@ -487,8 +489,16 @@ const handleError = (error, input) => {
       },
     ],
   };
+
+
   
-  
+  const [showModal, setShowModal] = useState(false);
+  const [mode, setMode] = useState("camera");
+  const [uri, setUri] = useState("");
+
+  const onToggleModal = () => {
+    setShowModal(!showModal)
+  }
 
   const __startCamera = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -510,7 +520,27 @@ const handleError = (error, input) => {
 
     const photo = await camera.takePictureAsync(options);
 
-    console.log(await camera?.getSupportedRatiosAsync());
+    setUri(photo.uri)
+    setStartCamera(false)
+    onToggleModal()
+  };
+
+  const pickImage = async () => {
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.photo,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+
+      setUri(result.assets[0]?.uri)
+      onToggleModal()
+
+    }
+  };
+
+  const __editPic = (photo) => {
 
     let temponPicture = capturedImage;
 
@@ -519,7 +549,10 @@ const handleError = (error, input) => {
     setCapturedImage(temponPicture);
 
     if (temponPicture.length >= 2) {
+      closeBottomSheet(importModal)
       setPreviewVisible(true);
+    }else{
+      openBottomSheet(importModal)
     }
 
     if (temponPicture.length >= 1) {
@@ -535,11 +568,7 @@ const handleError = (error, input) => {
     navigation.navigate("TensorScreen");
   }
 
-  const __retakePicture = () => {
-    setCapturedImage([]);
-    setPreviewVisible(false);
-    __startCamera();
-  };
+  
   const __handleFlashMode = () => {
     if (flashMode === "on") {
       setFlashMode("off");
@@ -563,7 +592,6 @@ const handleError = (error, input) => {
   };
 
   /********************************************************/
-  const [image, setImage] = useState([]);
 
   const [imgProfile, setImgProfile] = useState(null);
 
@@ -610,39 +638,6 @@ const handleError = (error, input) => {
     }
    
   }
-
-
-  const pickImage = async () => {
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.photo,
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage([result.assets[0]]);
-
-      let temponPicture = image;
-
-      temponPicture.push(result.assets[0]);
-
-      setImage(temponPicture);
-
-      if (temponPicture.length < 2) {
-        pickImage();
-      }else{
-        closeBottomSheet(importModal)
-      }
-    }
-  };
-
-  useEffect(()=>{
-    if (image.length == 3) {
-      setImage((image)=> ([image[2]]))
-      pickImage();
-      console.log(image);
-    }
-  },[image])
 
 
   const handleInitAnalyse = () => {
@@ -692,6 +687,15 @@ const handleError = (error, input) => {
     return stars;
   };
 
+  function __retakePicture() {
+    setStartCamera(false)
+    setCapturedImage([]);
+    setPreviewVisible(false);
+    setImageNumber("Top image")
+    openBottomSheet(importModal)
+    console.log("test");
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -704,170 +708,191 @@ const handleError = (error, input) => {
             backgroundColor: "#000",
           }}
         >
-          {previewVisible && capturedImage.length == 2 ? (
+          {!showModal &&<View
+                style={{
+                  flex: 1,
+                  width: "100%",
+                }}
+              >
+                  <View
+                    style={{
+                      height: height / 9,
+                      justifyContent: "center",
+                      alignItems: "flex-end",
+                      marginBottom: 50
+                    }}
+                  >
+                    <TouchableOpacity style={{ position: "absolute", left: 0 }} onPress={() => __retakePicture()}>
+                      <Icon
+                        name="arrow-back-outline"
+                        style={{ fontSize: 35, color: COLORS.white, left: 10 }} />
+                    </TouchableOpacity>
+                    <View
+                      style={{
+                        color: COLORS.white,
+                        borderWidth: 1,
+                        borderColor: COLORS.white,
+                        borderRadius: 30,
+                        width: 130,
+                        height: 35,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: COLORS.white,
+                        }}
+                      >
+                        {imageNumber}
+                      </Text>
+                    </View>
+                  </View>
+
+ 
+
+                    <Camera
+                      ratio="1:1"
+                      type={cameraType}
+                      flashMode={flashMode}
+                      style={{ width: width, height: width }}
+                      ref={(r) => {
+                        camera = r;
+                      } }
+                    >
+                      <View
+                        style={{
+                          flex: 1,
+                          width: "100%",
+                          backgroundColor: "transparent",
+                          flexDirection: "row",
+                        }}
+                      ></View>
+                    </Camera>
+
+
+
+                  <View
+                    style={{
+                      width: width,
+                      flex: 1,
+                      
+                      backgroundColor: "black",
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: "black",
+                        flexDirection: "row",
+                        gap: 70,
+                        justifyContent: "center",
+                        paddingTop: 20,
+                        flex: 1,
+                        alignItems: "flex-end",
+                        marginBottom: 20,
+                        width: width,
+                      }}
+                    >
+
+                      <TouchableOpacity
+                        onPress={__switchCamera}
+                        style={{
+                          borderRadius: 60,
+                          height: 60,
+                          width: 60,
+                        }}
+                      >
+                        <Animated.Text style={animatedStyle}>
+                          <Icon2
+                            name="issue-reopened"
+                            style={{ fontSize: 50, color: "#fff", flex: 1 }} />
+                        </Animated.Text>
+                      </TouchableOpacity>
+
+                      <View
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                          width: 80,
+                          height: 80,
+                          bottom: 0,
+                          borderRadius: 50,
+                          backgroundColor: "transparent",
+                          borderWidth: 3,
+                          borderColor: "white",
+                        }}
+                      >
+                        <TouchableOpacity
+                          onPress={__takePicture}
+                          style={{
+                            width: 60,
+                            height: 60,
+                            bottom: 0,
+                            borderRadius: 50,
+                            backgroundColor: "#fff",
+                          }} />
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={__handleFlashMode}
+                        style={{
+                          width: 60,
+                          height: 60,
+                        }}
+                      >
+                        {flashMode === "off" ? (
+                          <Icon
+                            name="flash-off-outline"
+                            style={{ fontSize: 50, color: "#fff" }} />
+                        ) : (
+                          <Icon
+                            name="flash-outline"
+                            style={{ fontSize: 50, color: "#fff" }} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>}
+        </View>
+      ) : (
+        <>
+
+          {showModal && capturedImage.length < 2 && <View
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ExpoImageManipulator
+                  photo={{uri}}
+                  isVisible={showModal}
+                  onPictureChoosed={(data) => {
+                    __editPic(data);
+                  } }
+                  onToggleModal={() => onToggleModal()}
+                  saveOptions={{
+                    compress: 1,
+                    format: 'png',
+                    base64: true,
+                  }} />
+
+              </View>}
+
+                  
+
+          {capturedImage.length >= 2 && (
+
             <CameraPreview
               photo={capturedImage}
               savePhoto={() => __savePhoto(capturedImage)}
               retakePicture={__retakePicture}
-              setCapturedImage={setCapturedImage}
-              setStartCamera={setStartCamera}
-              setImageNumber={setImageNumber}
-              setPreviewVisible={setPreviewVisible}
-            />
-          ) : (
-            <View
-              style={{
-                flex: 1,
-                width: "100%",
-              }}
-            >
-              <View
-                style={{
-                  height: height / 9,
-                  justifyContent: "center",
-                  alignItems: "flex-end",
-                }}
-              >
-                <TouchableOpacity style={{position: "absolute",left:0}} onPress={()=>[setStartCamera(false), setImage([]), setStartCamera(false), setImageNumber("Top image"),setPreviewVisible(false)]} >
-                  <Icon
-                  name="arrow-back-outline"
-                  style={{ fontSize: 35, color: COLORS.white, left: 10}}
-                  />
-                  </TouchableOpacity>
-                <View
-                  style={{
-                    color: COLORS.white,
-                    borderWidth: 1,
-                    borderColor: COLORS.white,
-                    borderRadius: 30,
-                    width: 130,
-                    height: 35,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: COLORS.white,
-                    }}
-                  >
-                    {imageNumber}
-                  </Text>
-                </View>
-              </View>
-              <Camera
-                ratio="1:1"
-                type={cameraType}
-                flashMode={flashMode}
-                style={{ width: width, height: width }}
-                ref={(r) => {
-                  camera = r;
-                }}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    width: "100%",
-                    backgroundColor: "transparent",
-                    flexDirection: "row",
-                  }}
-                ></View>
-              </Camera>
-
-              <View
-                style={{
-                  width:width,
-                  height:height-2/3*height-1/9*height,
-                  backgroundColor: "black",
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: "black",
-                    flexDirection:"row",
-                    gap:70,
-                    justifyContent:"center",
-                  paddingTop:20,
-                    flex: 1,
-                    width: width,
-                  }}
-                >
-  
-                    <TouchableOpacity
-                      onPress={__switchCamera}
-                      style={{
-                        borderRadius: 60,
-                        height: 60,
-                        width: 60,
-                      }}
-                    >
-                      <Animated.Text style={animatedStyle}>
-                        <Icon2
-                          name="issue-reopened"
-                          style={{ fontSize: 50, color: "#fff", flex: 1 }}
-                        />
-                      </Animated.Text>
-                    </TouchableOpacity>
-
-                    <View
-                      style={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        width: 80,
-                        height: 80,
-                        bottom: 0,
-                        borderRadius: 50,
-                        backgroundColor: "transparent",
-                        borderWidth: 3,
-                        borderColor: "white",
-                      }}
-                    >
-                      <TouchableOpacity
-                        onPress={__takePicture}
-                        style={{
-                          width: 60,
-                          height: 60,
-                          bottom: 0,
-                          borderRadius: 50,
-                          backgroundColor: "#fff",
-                        }}
-                      />
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={__handleFlashMode}
-                      style={{
-                        width: 60,
-                        height: 60,
-                      }}
-                    >
-                      {flashMode === "off" ? (
-                        <Icon
-                          name="flash-off-outline"
-                          style={{ fontSize: 50, color: "#fff" }}
-                        />
-                      ) : (
-                        <Icon
-                          name="flash-outline"
-                          style={{ fontSize: 50, color: "#fff" }}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-              </View>
-            </View>
-          )}
-        </View>
-      ) : (
-        <>
-          {image.length == 2 && (
-            <CameraPreview
-              photo={image}
-              savePhoto={() => __savePhoto(image)}
-              retakePicture={()=> setImage([])}
-              setImage={setImage}
             />
           )}
+
+                
 
 
   <View style={styles.topContainer}>
@@ -920,7 +945,7 @@ const handleError = (error, input) => {
 
           <View style={styles.middleContainer}> 
             { analysis?.length == 0 ?
-              <><Empty /><Text style={{ fontSize: 14, lineHeight: 16, fontFamily: 'PTSans-regular', }}>
+              <><Empty /><Text onPress={()=>{navigation.navigate("TestScreen")}} style={{ fontSize: 14, lineHeight: 16, fontFamily: 'PTSans-regular', }}>
                 Aucune analyse pour l’instant
               </Text></>
               
@@ -1048,7 +1073,7 @@ const handleError = (error, input) => {
            </Text>
 
            <Text style={{fontSize: 14, textAlign: "center", fontFamily: 'PTSans-regular', marginHorizontal: 50, marginTop: 10}} 
-            > Par quel moyen souhaitez vous importer vos 2 images
+            > Par quel moyen souhaitez vous importer l'image du {imageNumber == "Top image" ? "dessus" : "dessous"}
            </Text>
 
            <View style={{marginHorizontal: 30, marginTop: 10, justifyContent: "space-between", alignItems: "center", flexDirection:"row", gap: 15}}>

@@ -23,6 +23,7 @@ import { Provider} from 'react-redux';
 import store from "./src/redux/store";
 import { TransitionPresets } from "@react-navigation/stack";
 import UseAuth from "./src/custom-hooks/useAuth";
+import TestScreen from "./src/views/screens/TestScreen";
 
 
 
@@ -114,6 +115,8 @@ export default function App() {
             }}
     
           >
+            <Stack.Screen name="TestScreen" component={TestScreen} />
+
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
             <Stack.Screen name="TensorScreen" component={TensorScreen} />
             <Stack.Screen name="ResultScreen" component={ResultScreen} />
